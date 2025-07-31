@@ -1,0 +1,5 @@
+Bonus (si tu veux aller plus loin après) :
+- Afficher un emoji drapeau automatique (via une fonction getFlagFromDestination())
+- Afficher le nombre de compagnons (quand la base le gérera)
+- Afficher uniquement la date de début si pas de date de fin
+

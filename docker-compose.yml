@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres
+    container_name: pg_planmytrip
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: planmytrip
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql

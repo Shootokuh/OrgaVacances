@@ -1,0 +1,71 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Variables globales */
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-weight: 400;
+  color-scheme: light dark;
+  background-color: #f9fafb; /* Fond clair global */
+  color: #111827; /* Gris très foncé pour une bonne lisibilité */
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Reset de base du body */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: inherit;
+  background-color: #f9fafb;
+  color: inherit;
+  line-height: 1.5;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+/* Liens */
+a {
+  font-weight: 500;
+  color: #2563eb; /* Bleu Tailwind */
+  text-decoration: none;
+  transition: color 0.2s ease-in-out;
+}
+a:hover {
+  color: #1d4ed8; /* Bleu un peu plus foncé */
+}
+
+/* Titres */
+h1 {
+  font-size: 2rem;
+  line-height: 1.2;
+  margin-bottom: 0.5rem;
+}
+
+/* Boutons par défaut (optionnel si tu stylises tout avec des classes ou CSS modules) */
+button {
+  font-family: inherit;
+  font-weight: 500;
+  font-size: 1rem;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  background-color: #2563eb;
+  color: white;
+  transition: background-color 0.2s ease-in-out;
+}
+button:hover {
+  background-color: #1d4ed8;
+}
+
+/* Mode clair forcé */
+@media (prefers-color-scheme: light) {
+  :root {
+    background-color: #f9fafb;
+    color: #111827;
+  }
+}
