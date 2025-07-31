@@ -77,6 +77,27 @@ app.post('/api/trips', async (req, res) => {
   }
 });
 
+// ✅ Nouvelle route : suppression d’un voyage
+app.delete('/api/trips/:id', async (req, res) => {
+  const tripId = parseInt(req.params.id);
+
+  if (isNaN(tripId)) {
+    return res.status(400).json({ error: 'ID invalide' });
+  }
+
+  try {
+    const result = await pool.query('DELETE FROM trips WHERE id = $1 RETURNING *', [tripId]);
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Voyage non trouvé' });
+    }
+
+    res.json({ message: 'Voyage supprimé avec succès', deletedTrip: result.rows[0] });
+  } catch (err) {
+    console.error('Erreur lors de la suppression du voyage :', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {

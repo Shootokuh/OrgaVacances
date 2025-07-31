@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { Trip } from "../types/trip";
 import type { User } from "../types/user";
 import ModalAddTrip from "./ModalAddTrip";
+import ModalConfirmDelete from "./ModalConfirmDelete";
 import "../styles/TripList.css";
 
 
@@ -9,6 +10,7 @@ export default function TripList() {
   const [trips, setTrips] = useState<Trip[]>([]);
   const [user, setUser] = useState<User | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
 
   const toggleForm = () => {
     setShowForm(!showForm);
@@ -17,6 +19,22 @@ export default function TripList() {
   const handleTripAdded = (newTrip: Trip) => {
     setTrips((prev) => [...prev, newTrip]);
   };
+
+  const handleDeleteTrip = async (id: number) => {
+    console.log("Suppression du trip id :", selectedTrip?.id);
+    try {
+      const res = await fetch(`http://localhost:3001/api/trips/${id}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) throw new Error("Échec suppression");
+
+      setTrips((prev) => prev.filter((trip) => trip.id !== id));
+    } catch (err) {
+      console.error("Erreur suppression :", err);
+    }
+  };
+
 
   useEffect(() => {
     fetch("http://localhost:3001/api/trips")
@@ -41,15 +59,26 @@ export default function TripList() {
 
       <div className="trip-grid">
         {trips.map((trip) => (
-          <div key={trip.id} className="trip-card">
-            <span className="trip-emoji">🌍</span>
-            <h3 className="trip-name">{trip.title}</h3>
-            <p className="trip-destination">{trip.destination}</p>
-            <p className="trip-dates">
-              Du {new Date(trip.start_date).toLocaleDateString()} au{" "}
-              {new Date(trip.end_date).toLocaleDateString()}
-            </p>
-          </div>
+        <div key={trip.id} className="trip-card">
+          <button
+            className="delete-btn"
+            onClick={() => setSelectedTrip(trip)}
+            title="Supprimer le voyage"
+          >
+            🗑️
+          </button>
+
+
+
+          <span className="trip-emoji">🌍</span>
+          <h3 className="trip-name">{trip.title}</h3>
+          <p className="trip-destination">{trip.destination}</p>
+          <p className="trip-dates">
+            Du {new Date(trip.start_date).toLocaleDateString()} au{" "}
+            {new Date(trip.end_date).toLocaleDateString()}
+          </p>
+        </div>
+
         ))}
 
         {/* Carte "Nouveau voyage" */}
@@ -67,6 +96,16 @@ export default function TripList() {
       />
     )}
 
+    {selectedTrip && (
+      <ModalConfirmDelete
+        tripTitle={selectedTrip.title}
+        onClose={() => setSelectedTrip(null)}
+        onConfirm={() => {
+          handleDeleteTrip(selectedTrip.id);
+          setSelectedTrip(null);
+        }}
+      />
+    )}
 
     </div>
   );

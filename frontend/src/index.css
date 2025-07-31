@@ -45,8 +45,8 @@ h1 {
   margin-bottom: 0.5rem;
 }
 
-/* Boutons par défaut (optionnel si tu stylises tout avec des classes ou CSS modules) */
-button {
+/* Remplace par ça si tu veux styliser uniquement des boutons généraux */
+.button-primary {
   font-family: inherit;
   font-weight: 500;
   font-size: 1rem;
@@ -58,7 +58,7 @@ button {
   color: white;
   transition: background-color 0.2s ease-in-out;
 }
-button:hover {
+.button-primary:hover {
   background-color: #1d4ed8;
 }
 
