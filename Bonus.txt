@@ -3,3 +3,12 @@ Bonus (si tu veux aller plus loin après) :
 - Afficher le nombre de compagnons (quand la base le gérera)
 - Afficher uniquement la date de début si pas de date de fin
 
+Pour lancer les conteneur:
+
+ docker compose up
+
+Pour voir le conteneur :
+ docker ps 
+
+Pour stopper mon conteneur:
+ docker stop pg_planmytrip 
