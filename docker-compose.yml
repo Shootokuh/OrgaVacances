@@ -28,6 +28,10 @@ services:
       - db
     networks:
       - planmytrip_net
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+
 
   frontend:
     build: ./frontend
@@ -39,7 +43,11 @@ services:
       - backend
     networks:
       - planmytrip_net
+    volumes:
+      - ./frontend:/app  # 🟢 Montage du code local dans le conteneur
+      - /app/node_modules  # 🔒 Ignore les node_modules du host
     command: npm run dev -- --host
+
 
 networks:
   planmytrip_net:

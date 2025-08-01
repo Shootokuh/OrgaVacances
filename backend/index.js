@@ -4,6 +4,7 @@ require('dotenv').config();
 
 const userRoutes = require('./routes/userRoutes');
 const tripRoutes = require('./routes/tripRoutes');
+const activityRoutes = require('./routes/activityRoutes');
 
 const app = express();
 app.use(cors());
@@ -13,6 +14,7 @@ app.get('/', (req, res) => res.send('✅ Backend opérationnel !'));
 
 app.use('/api/users', userRoutes);
 app.use('/api/trips', tripRoutes);
+app.use('/api/activities', activityRoutes);
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {

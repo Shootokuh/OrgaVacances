@@ -99,3 +99,12 @@
 .new-trip p {
   margin: 0;
 }
+
+.trip-card-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.trip-card-link:hover {
+  cursor: pointer;
+}

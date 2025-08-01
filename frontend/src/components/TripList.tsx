@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import type { Trip } from "../types/trip";
 import type { User } from "../types/user";
 import ModalAddTrip from "./ModalAddTrip";
@@ -55,29 +56,32 @@ export default function TripList() {
       <h1 className="trip-title">
         Bienvenue {user ? user.name : "Pierre"} !
       </h1>
-      <p className="trip-subtitle">Prépare tes futures vacances !</p>
+      <p className="trip-subtitle">Prépare tes futures aventures !</p>
 
       <div className="trip-grid">
         {trips.map((trip) => (
-        <div key={trip.id} className="trip-card">
-          <button
-            className="delete-btn"
-            onClick={() => setSelectedTrip(trip)}
-            title="Supprimer le voyage"
-          >
-            🗑️
-          </button>
+        <Link to={`/trip/${trip.id}`} key={trip.id} className="trip-card-link">
+          <div className="trip-card">
+            <button
+              className="delete-btn"
+              onClick={(e) => {
+                e.preventDefault(); // ⛔ empêche la redirection si on clique sur la poubelle
+                setSelectedTrip(trip);
+              }}
+              title="Supprimer le voyage"
+            >
+              🗑️
+            </button>
 
-
-
-          <span className="trip-emoji">🌍</span>
-          <h3 className="trip-name">{trip.title}</h3>
-          <p className="trip-destination">{trip.destination}</p>
-          <p className="trip-dates">
-            Du {new Date(trip.start_date).toLocaleDateString()} au{" "}
-            {new Date(trip.end_date).toLocaleDateString()}
-          </p>
-        </div>
+            <span className="trip-emoji">🌍</span>
+            <h3 className="trip-name">{trip.title}</h3>
+            <p className="trip-destination">{trip.destination}</p>
+            <p className="trip-dates">
+              Du {new Date(trip.start_date).toLocaleDateString()} au{" "}
+              {new Date(trip.end_date).toLocaleDateString()}
+            </p>
+          </div>
+        </Link>
 
         ))}
 

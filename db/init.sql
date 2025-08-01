@@ -16,3 +16,13 @@ CREATE TABLE trips (
   end_date DATE,
   created_at TIMESTAMP DEFAULT NOW()
 );
+
+CREATE TABLE activities (
+  id SERIAL PRIMARY KEY,
+  trip_id INTEGER REFERENCES trips(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  date DATE NOT NULL,
+  time TIME,          -- 🆕 heure de l’activité
+  location TEXT,      -- 🆕 lieu de l’activité
+  description TEXT
+);

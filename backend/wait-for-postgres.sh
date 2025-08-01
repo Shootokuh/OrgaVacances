@@ -9,4 +9,4 @@ until nc -z db 5432; do
 done
 
 echo "✅ PostgreSQL est prêt - démarrage du serveur Node"
-exec node index.js
+exec npm run dev
