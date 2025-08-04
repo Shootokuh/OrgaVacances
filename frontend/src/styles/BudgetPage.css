@@ -1,0 +1,68 @@
+.budget-page-container {
+  padding: 2rem;
+  max-width: 800px;
+  margin: auto;
+  font-family: "Segoe UI", sans-serif;
+}
+
+.budget-page-container h1 {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.budget-page-container h2 {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #1e1e1e;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.budget-page-container p {
+  font-size: 1rem;
+  color: #555;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.expenses-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.07);
+  margin: 2rem 0;
+}
+
+.expenses-table th,
+.expenses-table td {
+  padding: 12px;
+  text-align: center;
+  border: 1px solid #e5e5e5;
+}
+
+.expenses-table th {
+  background-color: #f5f5f5;
+  font-weight: 600;
+}
+
+.expenses-table tr:nth-child(even) {
+  background-color: #fafafa;
+}
+
+.add-expense-btn {
+  background-color: #645a5a;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin: 1rem auto 0 auto;
+  display: block;
+}
+
+.add-expense-btn:hover {
+  background-color: #2a2727;
+}

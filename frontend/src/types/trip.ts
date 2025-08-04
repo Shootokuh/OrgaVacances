@@ -4,4 +4,5 @@ export type Trip = {
   destination: string;
   start_date: string;
   end_date: string;
+  budget: number;
 };

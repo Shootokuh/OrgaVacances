@@ -14,6 +14,7 @@ CREATE TABLE trips (
   destination TEXT,
   start_date DATE,
   end_date DATE,
+  budget NUMERIC(10, 2) DEFAULT 0,
   created_at TIMESTAMP DEFAULT NOW()
 );
 
@@ -25,4 +26,14 @@ CREATE TABLE activities (
   time TIME,          -- 🆕 heure de l’activité
   location TEXT,      -- 🆕 lieu de l’activité
   description TEXT
+);
+
+CREATE TABLE expenses (
+  id SERIAL PRIMARY KEY,
+  trip_id INTEGER REFERENCES trips(id),
+  category VARCHAR(50),
+  amount NUMERIC(10, 2),
+  description TEXT,
+  date DATE,
+  paid_by VARCHAR(100)
 );

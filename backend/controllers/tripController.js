@@ -1,3 +1,4 @@
+
 const pool = require('../models/db');
 
 exports.getTrips = async (req, res) => {
@@ -41,6 +42,32 @@ exports.deleteTrip = async (req, res) => {
     res.json({ message: 'Voyage supprimé avec succès', deletedTrip: result.rows[0] });
   } catch (err) {
     console.error('Erreur deleteTrip:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+};
+
+exports.updateTrip = async (req, res) => {
+  const tripId = parseInt(req.params.id);
+  const { budget } = req.body;
+
+  if (isNaN(tripId)) {
+    return res.status(400).json({ error: 'ID invalide' });
+  }
+  if (budget === undefined) {
+    return res.status(400).json({ error: 'Budget manquant' });
+  }
+
+  try {
+    const result = await pool.query(
+      'UPDATE trips SET budget = $1 WHERE id = $2 RETURNING *',
+      [budget, tripId]
+    );
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Voyage non trouvé' });
+    }
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Erreur updateTrip:', err);
     res.status(500).json({ error: 'Erreur serveur' });
   }
 };
