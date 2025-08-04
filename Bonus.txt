@@ -10,5 +10,5 @@ Pour lancer les conteneur:
 Pour voir le conteneur :
  docker ps 
 
-Pour stopper mon conteneur:
- docker stop pg_planmytrip 
+Pour stopper tout les conteneur:
+ docker stop $(docker ps -q)

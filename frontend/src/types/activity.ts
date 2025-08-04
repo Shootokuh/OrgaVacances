@@ -2,6 +2,8 @@ export type Activity = {
   id: number;
   trip_id: number;
   title: string;
+  description?: string;
   date: string;
-  description: string | null;
+  time?: string;
+  location?: string;
 };

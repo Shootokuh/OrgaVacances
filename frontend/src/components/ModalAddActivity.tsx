@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { Activity } from "../types/activity";
-import "../styles/ModalAddTrip.css"; // ✅ on réutilise le même fichier CSS
+import "../styles/ModalAddTrip.css";
 
 type ModalAddActivityProps = {
   onClose: () => void;

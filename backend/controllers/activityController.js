@@ -16,7 +16,7 @@ exports.getActivitiesByTrip = async (req, res) => {
 };
 
 exports.addActivity = async (req, res) => {
-  const { trip_id, title, date, description } = req.body;
+  const { trip_id, title, date, description, time, location } = req.body;
 
   if (!trip_id || !title || !date) {
     return res.status(400).json({ error: "Champs requis manquants" });
@@ -24,14 +24,60 @@ exports.addActivity = async (req, res) => {
 
   try {
     const result = await pool.query(
-      `INSERT INTO activities (trip_id, title, date, description)
-       VALUES ($1, $2, $3, $4)
-       RETURNING *`,
-      [trip_id, title, date, description]
+      `INSERT INTO activities (trip_id, title, date, description, time, location)
+      VALUES ($1, $2, $3, $4, $5, $6)
+      RETURNING *`,
+      [trip_id, title, date, description, time, location]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
     console.error("Erreur ajout activité :", err);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+};
+
+exports.deleteActivity = async (req, res) => {
+  const activityId = parseInt(req.params.id);
+  try {
+    await pool.query("DELETE FROM activities WHERE id = $1", [activityId]);
+    res.status(204).send(); // No Content
+  } catch (err) {
+    console.error("Erreur suppression activité :", err);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+};
+
+exports.updateActivity = async (req, res) => {
+  const activityId = parseInt(req.params.id);
+  const { title, date, time, location, description } = req.body;
+
+  if (!title || !date) {
+    return res.status(400).json({ error: "Champs requis manquants" });
+  }
+
+  try {
+    const result = await pool.query(
+      `UPDATE activities
+       SET title = $1,
+           date = $2,
+           time = $3,
+           location = $4,
+           description = $5
+       WHERE id = $6
+       RETURNING *`,
+      [
+        title,
+        date,
+        time === "" ? null : time,
+        location === "" ? null : location,
+        description,
+        activityId,
+      ]
+    );
+
+    res.status(200).json(result.rows[0]);
+  } catch (err) {
+    console.error("Erreur modification activité :", err);
     res.status(500).json({ error: "Erreur serveur" });
   }
 };
