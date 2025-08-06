@@ -21,7 +21,7 @@ export default function Header() {
         <Link to="/">Voyages</Link>
         <Link to={`/trip/${tripId}`}>Le planning</Link>
         <Link to={`/trip/${tripId}/budget`}>Budget</Link>
-        <a href="#">Checklist</a>
+        <Link to={`/trip/${tripId}/checklist`}>Checklist</Link>
       </nav>
 
       <button className="create-button">+ Créer un voyage</button>

@@ -37,3 +37,11 @@ CREATE TABLE expenses (
   date DATE,
   paid_by VARCHAR(100)
 );
+
+CREATE TABLE checklistitems (
+  id SERIAL PRIMARY KEY,
+  trip_id INTEGER REFERENCES trips(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  is_checked BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT NOW()
+);
