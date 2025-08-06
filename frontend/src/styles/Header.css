@@ -1,3 +1,70 @@
+/* Bouton de déconnexion bleu, positionné en haut à droite */
+
+.header {
+  display: flex;
+  align-items: center;
+  padding: 1rem 2rem;
+  background-color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border-bottom-left-radius: 1rem;
+  border-bottom-right-radius: 1rem;
+}
+
+.header-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #1f2937;
+  margin-right: 2rem;
+}
+
+.header-nav {
+  display: flex;
+  gap: 2rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #4b5563;
+  flex: 1;
+  justify-content: center;
+}
+
+.header-actions {
+  margin-left: auto;
+}
+
+.header-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #1f2937;
+  margin-right: 2rem;
+}
+
+.header-nav {
+  display: flex;
+  gap: 2rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #4b5563;
+}
+
+.header-actions {
+  margin-left: auto;
+}
+
+.logout-button {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 1rem;
+  box-shadow: 0 2px 8px #0002;
+  transition: background 0.2s;
+}
+.logout-button:hover {
+  background: #1741a6;
+}
 .header {
   display: flex;
   justify-content: space-between;

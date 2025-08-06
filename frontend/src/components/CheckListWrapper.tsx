@@ -2,13 +2,14 @@ import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import CheckList from "./CheckList";
 import type { Trip } from "../types/trip";
+import { apiFetch } from "../utils/api";
 
 export default function CheckListWrapper() {
   const { id } = useParams();
   const [trip, setTrip] = useState<Trip | null>(null);
 
   useEffect(() => {
-    fetch(`http://localhost:3001/api/trips`)
+    apiFetch(`http://localhost:3001/api/trips`)
       .then((res) => res.json())
       .then((data) => {
         const found = data.find((t: Trip) => t.id === Number(id));

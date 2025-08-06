@@ -4,6 +4,7 @@ import type { Trip } from "../types/trip";
 import type { User } from "../types/user";
 import ModalAddTrip from "./ModalAddTrip";
 import ModalConfirmDelete from "./ModalConfirmDelete";
+import { apiFetch } from "../utils/api";
 import "../styles/TripList.css";
 
 
@@ -24,7 +25,7 @@ export default function TripList() {
   const handleDeleteTrip = async (id: number) => {
     console.log("Suppression du trip id :", selectedTrip?.id);
     try {
-      const res = await fetch(`http://localhost:3001/api/trips/${id}`, {
+      const res = await apiFetch(`http://localhost:3001/api/trips/${id}`, {
         method: "DELETE",
       });
 
@@ -38,17 +39,17 @@ export default function TripList() {
 
 
   useEffect(() => {
-    fetch("http://localhost:3001/api/trips")
+    apiFetch("http://localhost:3001/api/trips")
       .then((res) => res.json())
       .then((data) => setTrips(data))
       .catch((err) => console.error("Erreur chargement voyages", err));
   }, []);
 
   useEffect(() => {
-    fetch("http://localhost:3001/api/users")
+    apiFetch("http://localhost:3001/api/users/me")
       .then((res) => res.json())
-      .then((data) => setUser(data[0])) // On prend le premier user de la liste
-      .catch((err) => console.error("Erreur chargement utilisateur", err));
+      .then((data) => setUser(data))
+      .catch((err) => console.error("Erreur chargement utilisateur connecté", err));
   }, []);
 
   return (
@@ -56,6 +57,13 @@ export default function TripList() {
       <h1 className="trip-title">
         Bienvenue {user ? user.name : "Pierre"} !
       </h1>
+      <button
+        style={{ position: 'absolute', top: 24, right: 32, background: '#2563eb', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 16px', fontWeight: 600, cursor: 'pointer', fontSize: '1rem', boxShadow: '0 2px 8px #0002' }}
+        onClick={() => {
+          localStorage.removeItem('token');
+          window.location.reload();
+        }}
+      >Déconnexion</button>
       <p className="trip-subtitle">Prépare tes futures aventures !</p>
 
       <div className="trip-grid">

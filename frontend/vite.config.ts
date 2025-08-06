@@ -11,5 +11,8 @@ export default defineConfig({
       usePolling: true, // 🔁 surveille manuellement les fichiers
       interval: 100,     // 👀 vérifie toutes les 100ms
     },
+    proxy: {
+      '/api': 'http://localhost:3001'
+    }
   },
 })

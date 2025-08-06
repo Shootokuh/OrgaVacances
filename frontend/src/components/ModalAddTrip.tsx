@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { User } from "../types/user";
 import "../styles/ModalAddTrip.css";
+import { apiFetch } from "../utils/api";
 
 type ModalAddTripProps = {
   onClose: () => void;
@@ -25,7 +26,6 @@ export default function ModalAddTrip({ onClose, user, onTripAdded }: ModalAddTri
     e.preventDefault();
 
     const newTrip = {
-        user_id: user?.id || 1,
         title,
         destination,
         start_date: startDate,
@@ -33,11 +33,8 @@ export default function ModalAddTrip({ onClose, user, onTripAdded }: ModalAddTri
     };
 
     try {
-        const res = await fetch("http://localhost:3001/api/trips", {
+        const res = await apiFetch("http://localhost:3001/api/trips", {
         method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
         body: JSON.stringify(newTrip),
         });
 

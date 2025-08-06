@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import ModalAddExpense from "./ModalAddExpense";
@@ -6,6 +5,7 @@ import ModalEditExpense from "./ModalEditExpense";
 import "../styles/BudgetPage.css";
 import type { Trip } from "../types/trip";
 import type { Expense } from "../types/expense";
+import { apiFetch } from "../utils/api";
 
 
 export default function BudgetPage() {
@@ -21,14 +21,14 @@ export default function BudgetPage() {
   useEffect(() => {
     if (!id) return;
 
-    fetch(`http://localhost:3001/api/trips`)
+    apiFetch(`http://localhost:3001/api/trips`)
       .then((res) => res.json())
       .then((data) => {
         const found = data.find((t: Trip) => t.id === Number(id));
         setTrip(found);
       });
 
-    fetch(`http://localhost:3001/api/expenses/trip/${id}`)
+    apiFetch(`http://localhost:3001/api/expenses/trip/${id}`)
       .then((res) => res.json())
       .then((data) => setExpenses(data));
   }, [id]);

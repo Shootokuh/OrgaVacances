@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "jsonwebtoken": "^9.0.2",
+    "node-pg-migrate": "^8.0.3"
+  }
+}

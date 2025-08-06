@@ -5,6 +5,7 @@ import type { Trip } from "../types/trip";
 import type { Activity } from "../types/activity";
 import ModalAddActivity from "./ModalAddActivity";
 import ModalEditActivity from "./ModalEditActivity";
+import { apiFetch } from "../utils/api";
 
 export default function TripDetails() {
   const { id } = useParams();
@@ -14,9 +15,8 @@ export default function TripDetails() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
 
-
   useEffect(() => {
-    fetch(`http://localhost:3001/api/trips`)
+    apiFetch(`http://localhost:3001/api/trips`)
       .then((res) => res.json())
       .then((data) => {
         const foundTrip = data.find((t: Trip) => t.id === Number(id));
@@ -26,7 +26,7 @@ export default function TripDetails() {
 
   useEffect(() => {
     if (!id) return;
-    fetch(`http://localhost:3001/api/activities/trip/${id}`)
+    apiFetch(`http://localhost:3001/api/activities/trip/${id}`)
       .then((res) => res.json())
       .then((data) => setActivities(data));
   }, [id]);
@@ -37,7 +37,7 @@ export default function TripDetails() {
 
   const handleDeleteActivity = async (activityId: number) => {
     try {
-      const res = await fetch(`http://localhost:3001/api/activities/${activityId}`, {
+      const res = await apiFetch(`http://localhost:3001/api/activities/${activityId}`, {
         method: "DELETE",
       });
 
@@ -48,7 +48,6 @@ export default function TripDetails() {
       console.error("Erreur suppression activité :", err);
     }
   };
-
 
   const groupedActivities = activities.reduce<Record<string, Activity[]>>(
     (acc, act) => {

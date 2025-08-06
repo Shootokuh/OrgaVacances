@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { apiFetch } from "../utils/api";
 import { useParams } from "react-router-dom";
 import "../styles/CheckList.css";
 import type { Task } from "../types/checklist";
@@ -15,7 +16,7 @@ export default function CheckList({ destination, startDate, endDate }: { destina
   useEffect(() => {
     if (!tripId) return;
     setLoading(true);
-    fetch(`http://localhost:3001/api/checklist/trip/${tripId}`)
+    apiFetch(`http://localhost:3001/api/checklist/trip/${tripId}`)
       .then(res => res.json())
       .then(data => setTasks(data))
       .catch(() => setError("Erreur de chargement"))
@@ -27,9 +28,8 @@ export default function CheckList({ destination, startDate, endDate }: { destina
     if (newTask.trim() === "") return;
     setLoading(true);
     try {
-      const res = await fetch(`http://localhost:3001/api/checklist/trip/${tripId}`, {
+      const res = await apiFetch(`http://localhost:3001/api/checklist/trip/${tripId}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title: newTask })
       });
       if (!res.ok) throw new Error();
@@ -49,9 +49,8 @@ export default function CheckList({ destination, startDate, endDate }: { destina
   const handleToggle = async (id: number, checked: boolean) => {
     setLoading(true);
     try {
-      const res = await fetch(`http://localhost:3001/api/checklist/${id}`, {
+      const res = await apiFetch(`http://localhost:3001/api/checklist/${id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ is_checked: !checked })
       });
       if (!res.ok) throw new Error();
@@ -69,7 +68,7 @@ export default function CheckList({ destination, startDate, endDate }: { destina
   const handleDelete = async (id: number) => {
     setLoading(true);
     try {
-      const res = await fetch(`http://localhost:3001/api/checklist/${id}`, {
+      const res = await apiFetch(`http://localhost:3001/api/checklist/${id}`, {
         method: "DELETE"
       });
       if (!res.ok) throw new Error();

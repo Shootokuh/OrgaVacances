@@ -13,18 +13,24 @@ export default function Header() {
   const showHeader = !!tripId;
   if (!showHeader) return null;
 
+  // Déconnexion : supprime le token et recharge la page
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    window.location.reload();
+  };
+
   return (
     <header className="header">
       <div className="header-title">PlanMyTrip</div>
-
       <nav className="header-nav">
         <Link to="/">Voyages</Link>
         <Link to={`/trip/${tripId}`}>Le planning</Link>
         <Link to={`/trip/${tripId}/budget`}>Budget</Link>
         <Link to={`/trip/${tripId}/checklist`}>Checklist</Link>
       </nav>
-
-      <button className="create-button">+ Créer un voyage</button>
+      <div className="header-actions">
+        <button className="logout-button" onClick={handleLogout}>Déconnexion</button>
+      </div>
     </header>
   );
 }
