@@ -12,3 +12,18 @@ Pour voir le conteneur :
 
 Pour stopper tout les conteneur:
  docker stop $(docker ps -q)
+
+Pour retester l'envoie de mail:
+
+Voici comment tester l’envoi d’email en local avec Ethereal (le plus simple pour le dev) :
+
+Va sur https://ethereal.email/ et clique sur "Create Ethereal Account".
+Copie les infos SMTP affichées (host, port, user, pass).
+Dans ton dossier backend, crée un fichier .env (si tu n’en as pas déjà un) et ajoute :
+(remplace ton_user_ethereal et ton_pass_ethereal par tes identifiants Ethereal)
+
+Redémarre ton serveur Node pour prendre en compte la config.
+
+Utilise le formulaire "Mot de passe oublié" sur ton frontend, ou envoie une requête POST à /api/users/forgot-password avec un email existant.
+
+Va sur https://ethereal.email/messages pour voir l’email envoyé.

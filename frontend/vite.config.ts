@@ -12,7 +12,11 @@ export default defineConfig({
       interval: 100,     // 👀 vérifie toutes les 100ms
     },
     proxy: {
-      '/api': 'http://localhost:3001'
+      '/api': {
+        target: 'http://backend:3001', // Utilise le nom du service Docker
+        changeOrigin: true,
+        secure: false,
+      },
     }
   },
 })

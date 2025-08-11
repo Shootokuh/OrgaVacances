@@ -5,7 +5,9 @@ CREATE TABLE users (
   name TEXT,
   avatar_url TEXT,
   password_hash TEXT,
-  created_at TIMESTAMP DEFAULT NOW()
+  created_at TIMESTAMP DEFAULT NOW(),
+  reset_token TEXT,
+  reset_token_expires TIMESTAMP
 );
 
 CREATE TABLE trips (
@@ -24,7 +26,8 @@ CREATE TABLE activities (
   trip_id INTEGER REFERENCES trips(id) ON DELETE CASCADE,
   title TEXT NOT NULL,
   date DATE NOT NULL,
-  time TIME,          -- 🆕 heure de l’activité
+  time TIME,          -- 🆕 heure de début de l’activité
+  end_time TIME,      -- 🆕 heure de fin de l’activité
   location TEXT,      -- 🆕 lieu de l’activité
   description TEXT
 );

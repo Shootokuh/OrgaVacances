@@ -1,6 +1,8 @@
 const jwt = require('jsonwebtoken');
 const pool = require('../models/db');
 const bcrypt = require('bcrypt');
+const crypto = require('crypto');
+const nodemailer = require('nodemailer');
 
 
 exports.getUsers = async (req, res) => {
@@ -95,6 +97,45 @@ exports.login = async (req, res) => {
   }
 };
 
+// Mot de passe oublié : génère un token et envoie un email
+exports.forgotPassword = async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ error: 'Email requis' });
+  try {
+    const userResult = await pool.query('SELECT id, email FROM users WHERE email = $1', [email]);
+    if (userResult.rows.length === 0) {
+      // Toujours répondre OK pour ne pas révéler si l’email existe
+      return res.json({ message: 'Si le compte existe, un email a été envoyé.' });
+    }
+    const user = userResult.rows[0];
+    // Génère un token aléatoire
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const expires = new Date(Date.now() + 60 * 60 * 1000); // 1h
+    // Stocke le token et l’expiration en base
+    await pool.query('UPDATE users SET reset_token = $1, reset_token_expires = $2 WHERE id = $3', [resetToken, expires, user.id]);
+    // Envoie l’email (à adapter selon config réelle)
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST || 'smtp.example.com',
+      port: process.env.SMTP_PORT || 587,
+      auth: {
+        user: process.env.SMTP_USER || 'user',
+        pass: process.env.SMTP_PASS || 'pass'
+      }
+    });
+    const resetUrl = `http://localhost:5173/reset-password?token=${resetToken}`;
+    await transporter.sendMail({
+      from: 'no-reply@planmytrip.com',
+      to: user.email,
+      subject: 'Réinitialisation du mot de passe',
+      html: `<p>Pour réinitialiser votre mot de passe, cliquez ici : <a href="${resetUrl}">${resetUrl}</a></p>`
+    });
+    res.json({ message: 'Si le compte existe, un email a été envoyé.' });
+  } catch (err) {
+    console.error('Erreur forgotPassword:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+};
+
 // Middleware pour extraire l'utilisateur du token
 exports.getMe = async (req, res) => {
   const authHeader = req.headers['authorization'];
@@ -109,5 +150,40 @@ exports.getMe = async (req, res) => {
     res.json(userResult.rows[0]);
   } catch (err) {
     return res.status(401).json({ error: 'Token invalide' });
+  }
+};
+
+// Handler pour la réinitialisation du mot de passe
+exports.resetPassword = async (req, res) => {
+  const { token, password } = req.body;
+  if (!token || !password) {
+    return res.status(400).json({ error: 'Token et nouveau mot de passe requis' });
+  }
+  try {
+    // Cherche l'utilisateur avec ce token et vérifie l'expiration
+    const userResult = await pool.query(
+      'SELECT id, reset_token_expires FROM users WHERE reset_token = $1',
+      [token]
+    );
+    if (userResult.rows.length === 0) {
+      return res.status(400).json({ error: 'Token invalide ou expiré' });
+    }
+    const user = userResult.rows[0];
+    if (new Date(user.reset_token_expires) < new Date()) {
+      return res.status(400).json({ error: 'Token expiré' });
+    }
+    // Hash le nouveau mot de passe
+    const saltRounds = 10;
+    const password_hash = await bcrypt.hash(password, saltRounds);
+    // Met à jour le mot de passe et nettoie le token
+    await pool.query(
+      'UPDATE users SET password_hash = $1, reset_token = NULL, reset_token_expires = NULL WHERE id = $2',
+      [password_hash, user.id]
+    );
+    res.json({ message: 'Mot de passe réinitialisé avec succès.' });
+  } catch (err) {
+    console.error('Erreur resetPassword:', err);
+    if (err && err.stack) console.error('Stack:', err.stack);
+    res.status(500).json({ error: 'Erreur serveur', details: err.message || err });
   }
 };
