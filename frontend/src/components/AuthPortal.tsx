@@ -23,7 +23,7 @@ const AuthPortal: React.FC<AuthPortalProps> = ({ setToken }) => {
     setError('');
     setForgotSuccess('');
     try {
-      const res = await fetch('http://localhost:3001/api/users/forgot-password', {
+  const res = await fetch('/api/users/forgot-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: forgotEmail })
@@ -43,7 +43,7 @@ const AuthPortal: React.FC<AuthPortalProps> = ({ setToken }) => {
     e.preventDefault();
     setError('');
     try {
-      const res = await fetch(`http://localhost:3001/api/users/login`, {
+  const res = await fetch('/api/users/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: loginEmail, password: loginPassword })
@@ -62,7 +62,7 @@ const AuthPortal: React.FC<AuthPortalProps> = ({ setToken }) => {
     e.preventDefault();
     setError('');
     try {
-      const res = await fetch(`http://localhost:3001/api/users/register`, {
+  const res = await fetch('/api/users/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: registerEmail, name: registerName, password: registerPassword })
@@ -70,7 +70,7 @@ const AuthPortal: React.FC<AuthPortalProps> = ({ setToken }) => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Erreur d\'inscription');
       // Connexion automatique après inscription
-      const loginRes = await fetch(`http://localhost:3001/api/users/login`, {
+  const loginRes = await fetch('/api/users/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: registerEmail, password: registerPassword })

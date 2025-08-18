@@ -18,7 +18,7 @@ export default function TripDetails() {
   // const [showCalendar, setShowCalendar] = useState(false); // Non utilisé
 
   useEffect(() => {
-    apiFetch(`http://localhost:3001/api/trips`)
+  apiFetch(`/api/trips`)
       .then((res) => res.json())
       .then((data) => {
         const foundTrip = data.find((t: Trip) => t.id === Number(id));
@@ -28,7 +28,7 @@ export default function TripDetails() {
 
   useEffect(() => {
     if (!id) return;
-    apiFetch(`http://localhost:3001/api/activities/trip/${id}`)
+  apiFetch(`/api/activities/trip/${id}`)
       .then((res) => res.json())
       .then((data) => setActivities(data));
   }, [id]);
@@ -39,7 +39,7 @@ export default function TripDetails() {
 
   const handleDeleteActivity = async (activityId: number) => {
     try {
-      const res = await apiFetch(`http://localhost:3001/api/activities/${activityId}`, {
+  const res = await apiFetch(`/api/activities/${activityId}`, {
         method: "DELETE",
       });
 

@@ -33,7 +33,7 @@ export default function ModalAddTrip({ onClose, /* user, */ onTripAdded }: Modal
     };
 
     try {
-        const res = await apiFetch("http://localhost:3001/api/trips", {
+  const res = await apiFetch("/api/trips", {
         method: "POST",
         body: JSON.stringify(newTrip),
         });

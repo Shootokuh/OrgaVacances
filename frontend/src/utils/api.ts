@@ -10,5 +10,8 @@ export async function apiFetch(url: string, options: RequestInit = {}) {
     ...(token ? { 'Authorization': `Bearer ${token}` } : {})
   };
   const opts = { ...options, headers };
-  return fetch(url, opts);
+  // Préfixe l'URL par VITE_API_URL si ce n'est pas déjà un URL absolu
+  const baseUrl = import.meta.env.VITE_API_URL;
+  const fullUrl = url.startsWith('http') ? url : `${baseUrl}${url.startsWith('/') ? '' : '/'}${url}`;
+  return fetch(fullUrl, opts);
 }

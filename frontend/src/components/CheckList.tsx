@@ -16,7 +16,7 @@ export default function CheckList({ destination, startDate, endDate }: { destina
   useEffect(() => {
     if (!tripId) return;
     setLoading(true);
-    apiFetch(`http://localhost:3001/api/checklist/trip/${tripId}`)
+  apiFetch(`/api/checklist/trip/${tripId}`)
       .then(res => res.json())
       .then(data => setTasks(data))
       .catch(() => setError("Erreur de chargement"))
@@ -28,7 +28,7 @@ export default function CheckList({ destination, startDate, endDate }: { destina
     if (newTask.trim() === "") return;
     setLoading(true);
     try {
-      const res = await apiFetch(`http://localhost:3001/api/checklist/trip/${tripId}`, {
+  const res = await apiFetch(`/api/checklist/trip/${tripId}`, {
         method: "POST",
         body: JSON.stringify({ title: newTask })
       });
@@ -49,7 +49,7 @@ export default function CheckList({ destination, startDate, endDate }: { destina
   const handleToggle = async (id: number, checked: boolean) => {
     setLoading(true);
     try {
-      const res = await apiFetch(`http://localhost:3001/api/checklist/${id}`, {
+  const res = await apiFetch(`/api/checklist/${id}`, {
         method: "PUT",
         body: JSON.stringify({ is_checked: !checked })
       });
@@ -68,7 +68,7 @@ export default function CheckList({ destination, startDate, endDate }: { destina
   // const handleDelete = async (id: number) => {
   //   setLoading(true);
   //   try {
-  //     const res = await apiFetch(`http://localhost:3001/api/checklist/${id}`, {
+  //     const res = await apiFetch(`/api/checklist/${id}`, {
   //       method: "DELETE"
   //     });
   //     if (!res.ok) throw new Error();
