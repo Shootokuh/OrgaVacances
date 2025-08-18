@@ -14,14 +14,12 @@ COPY package*.json ./
 RUN npm install
 
 
-# Copie du code source (y compris le script d’attente)
-COPY . .
 
-# Donne les droits d’exécution au script d’attente (chemin explicite)
-RUN chmod +x /app/wait-for-postgres.sh
+# Copie du code source
+COPY . .
 
 # Port exposé
 EXPOSE 3001
 
-# Lancement avec attente de la DB
-CMD ["./wait-for-postgres.sh"]
+# Lancement direct du serveur Node.js
+CMD ["npm", "start"]
