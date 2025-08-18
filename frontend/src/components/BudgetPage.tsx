@@ -21,14 +21,14 @@ export default function BudgetPage() {
   useEffect(() => {
     if (!id) return;
 
-    apiFetch(`http://localhost:3001/api/trips`)
+  apiFetch(`/api/trips`)
       .then((res) => res.json())
       .then((data) => {
         const found = data.find((t: Trip) => t.id === Number(id));
         setTrip(found);
       });
 
-    apiFetch(`http://localhost:3001/api/expenses/trip/${id}`)
+  apiFetch(`/api/expenses/trip/${id}`)
       .then((res) => res.json())
       .then((data) => setExpenses(data));
   }, [id]);

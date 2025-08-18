@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import '../styles/ResetPassword.css';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import { apiFetch } from '../utils/api';
 
 const ResetPassword: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -32,7 +33,7 @@ const ResetPassword: React.FC = () => {
     setLoading(true);
     try {
       console.log('Envoi requête reset-password:', { token, password });
-      const res = await fetch('/api/users/reset-password', {
+  const res = await apiFetch('/api/users/reset-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token, password })

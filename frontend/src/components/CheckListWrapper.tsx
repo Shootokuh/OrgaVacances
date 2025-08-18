@@ -9,7 +9,7 @@ export default function CheckListWrapper() {
   const [trip, setTrip] = useState<Trip | null>(null);
 
   useEffect(() => {
-    apiFetch(`http://localhost:3001/api/trips`)
+  apiFetch(`/api/trips`)
       .then((res) => res.json())
       .then((data) => {
         const found = data.find((t: Trip) => t.id === Number(id));

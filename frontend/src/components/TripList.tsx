@@ -25,7 +25,7 @@ export default function TripList() {
   const handleDeleteTrip = async (id: number) => {
     console.log("Suppression du trip id :", selectedTrip?.id);
     try {
-      const res = await apiFetch(`http://localhost:3001/api/trips/${id}`, {
+  const res = await apiFetch(`/api/trips/${id}`, {
         method: "DELETE",
       });
 
@@ -39,14 +39,14 @@ export default function TripList() {
 
 
   useEffect(() => {
-    apiFetch("http://localhost:3001/api/trips")
+  apiFetch("/api/trips")
       .then((res) => res.json())
       .then((data) => setTrips(data))
       .catch((err) => console.error("Erreur chargement voyages", err));
   }, []);
 
   useEffect(() => {
-    apiFetch("http://localhost:3001/api/users/me")
+  apiFetch("/api/users/me")
       .then((res) => res.json())
       .then((data) => setUser(data))
       .catch((err) => console.error("Erreur chargement utilisateur connecté", err));

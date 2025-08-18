@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { apiFetch } from '../utils/api';
 import '../styles/AuthPortal.css';
 
 // const API_URL = '/api/users'; // Non utilisé
@@ -23,9 +24,8 @@ const AuthPortal: React.FC<AuthPortalProps> = ({ setToken }) => {
     setError('');
     setForgotSuccess('');
     try {
-  const res = await fetch('/api/users/forgot-password', {
+      const res = await apiFetch('/api/users/forgot-password', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: forgotEmail })
       });
       const data = await res.json();
@@ -43,9 +43,8 @@ const AuthPortal: React.FC<AuthPortalProps> = ({ setToken }) => {
     e.preventDefault();
     setError('');
     try {
-  const res = await fetch('/api/users/login', {
+      const res = await apiFetch('/api/users/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: loginEmail, password: loginPassword })
       });
       const data = await res.json();
@@ -62,17 +61,15 @@ const AuthPortal: React.FC<AuthPortalProps> = ({ setToken }) => {
     e.preventDefault();
     setError('');
     try {
-  const res = await fetch('/api/users/register', {
+      const res = await apiFetch('/api/users/register', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: registerEmail, name: registerName, password: registerPassword })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Erreur d\'inscription');
       // Connexion automatique après inscription
-  const loginRes = await fetch('/api/users/login', {
+      const loginRes = await apiFetch('/api/users/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: registerEmail, password: registerPassword })
       });
       const loginData = await loginRes.json();

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { Activity } from "../types/activity";
 import "../styles/ModalEditActivity.css";
+import { apiFetch } from '../utils/api';
 
 type ModalEditActivityProps = {
   activity: Activity;
@@ -39,7 +40,7 @@ export default function ModalEditActivity({
     };
 
     try {
-      const res = await fetch(`http://localhost:3001/api/activities/${activity.id}`, {
+  const res = await apiFetch(`/api/activities/${activity.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import "../styles/ModalEditExpense.css";
 import type { Expense } from "../types/expense";
+import { apiFetch } from '../utils/api';
 
 export type ModalEditExpenseProps = {
   expense: Expense;
@@ -27,7 +28,7 @@ export default function ModalEditExpense({ expense, onClose, onExpenseUpdated }:
     }
     setLoading(true);
     try {
-      const res = await fetch(`http://localhost:3001/api/expenses/${expense.id}`, {
+  const res = await apiFetch(`/api/expenses/${expense.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

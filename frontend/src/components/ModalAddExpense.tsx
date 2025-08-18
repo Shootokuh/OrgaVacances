@@ -1,5 +1,6 @@
 import { useState } from "react";
 import "../styles/ModalAddExpense.css";
+import { apiFetch } from '../utils/api';
 
 export type ModalAddExpenseProps = {
   tripId: number | string;
@@ -26,7 +27,7 @@ export default function ModalAddExpense({ tripId, onClose, onExpenseAdded }: Mod
     }
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:3001/api/expenses', {
+  const res = await apiFetch('/api/expenses', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

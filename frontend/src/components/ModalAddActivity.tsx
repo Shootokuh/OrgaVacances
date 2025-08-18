@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { Activity } from "../types/activity";
 import "../styles/ModalAddTrip.css";
+import { apiFetch } from '../utils/api';
 
 type ModalAddActivityProps = {
   onClose: () => void;
@@ -37,7 +38,7 @@ export default function ModalAddActivity({ onClose, tripId, onActivityAdded, def
     };
 
     try {
-      const res = await fetch("http://localhost:3001/api/activities", {
+  const res = await apiFetch('/api/activities', {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
