@@ -66,20 +66,23 @@ export default function CheckList({ destination, startDate, endDate }: { destina
 
   // Supprimer une tâche
   const handleDelete = async (id: number) => {
-    setLoading(true);
-    try {
-      const res = await apiFetch(`http://localhost:3001/api/checklist/${id}`, {
-        method: "DELETE"
-      });
-      if (!res.ok) throw new Error();
-      setTasks(tasks => tasks.filter(t => t.id !== id));
-      setError("");
-    } catch {
-      setError("Erreur lors de la suppression");
-    } finally {
-      setLoading(false);
-    }
-  };
+  // const handleDelete = async (id: number) => {
+  //   setLoading(true);
+  //   try {
+  //     const res = await apiFetch(`http://localhost:3001/api/checklist/${id}`, {
+  //       method: "DELETE"
+  //     });
+  //     if (!res.ok) throw new Error();
+  //     setTasks(tasks => tasks.filter(t => t.id !== id));
+  //     setError("");
+  //   } catch {
+  //     setError("Erreur lors de la suppression");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // }; // Non utilisé
+  const handleCheckboxChange = (_e: React.ChangeEvent<HTMLInputElement>, id: number) => {
+  const handleEdit = (_e: React.MouseEvent<HTMLButtonElement>, id: number) => {
 
   return (
     <div className="checklist-card">

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import '../styles/AuthPortal.css';
 
-const API_URL = '/api/users';
+// const API_URL = '/api/users'; // Non utilisé
 
 interface AuthPortalProps {
   setToken: (token: string) => void;

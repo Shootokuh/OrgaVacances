@@ -10,7 +10,7 @@ import CheckListWrapper from "./components/CheckListWrapper";
 import AuthPortal from "./components/AuthPortal";
 import ResetPassword from "./components/ResetPassword";
 import "./styles/AuthPortal.css";
-import React, { useState } from "react";
+import { useState } from "react"; // React non utilisé
 
 
 

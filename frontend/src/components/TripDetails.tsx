@@ -15,7 +15,7 @@ export default function TripDetails() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
-  const [showCalendar, setShowCalendar] = useState(false);
+  // const [showCalendar, setShowCalendar] = useState(false); // Non utilisé
 
   useEffect(() => {
     apiFetch(`http://localhost:3001/api/trips`)

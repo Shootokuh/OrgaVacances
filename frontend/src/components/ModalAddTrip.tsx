@@ -9,7 +9,7 @@ type ModalAddTripProps = {
   onTripAdded: (trip: any) => void;
 };
 
-export default function ModalAddTrip({ onClose, user, onTripAdded }: ModalAddTripProps) {
+export default function ModalAddTrip({ onClose, /* user, */ onTripAdded }: ModalAddTripProps) { // user non utilisé
   const [title, setTitle] = useState("");
   const [destination, setDestination] = useState("");
   const [startDate, setStartDate] = useState("");
