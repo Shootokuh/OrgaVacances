@@ -114,7 +114,7 @@ export default function CheckList({ destination, startDate, endDate }: { destina
         <div
           className="checklist-add-row"
           tabIndex={-1}
-          onBlur={e => {
+          onBlur={() => {
             // Si le blur vient du input ou du bouton, on ferme le formulaire
             // (sauf si on clique sur le bouton Ajouter)
             setShowInput(false);
@@ -130,7 +130,7 @@ export default function CheckList({ destination, startDate, endDate }: { destina
             autoFocus
             onKeyDown={e => { if (e.key === "Enter") handleAddTask(); }}
             disabled={loading}
-            onBlur={e => {
+            onBlur={() => {
               // Si on clique ailleurs que sur le bouton, on ferme
               setShowInput(false);
               setNewTask("");
