@@ -81,8 +81,8 @@ export default function CheckList({ destination, startDate, endDate }: { destina
   //     setLoading(false);
   //   }
   // }; // Non utilisé
-  const handleCheckboxChange = (_e: React.ChangeEvent<HTMLInputElement>, id: number) => {
-  const handleEdit = (_e: React.MouseEvent<HTMLButtonElement>, id: number) => {
+  // const handleCheckboxChange = (_e: React.ChangeEvent<HTMLInputElement>, id: number) => {} // Non utilisé
+  // const handleEdit = (_e: React.MouseEvent<HTMLButtonElement>, id: number) => {} // Non utilisé
 
   return (
     <div className="checklist-card">
