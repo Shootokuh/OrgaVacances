@@ -13,10 +13,9 @@ COPY package*.json ./
 # Installation des dépendances
 RUN npm install
 
-
-
 # Copie du code source
 COPY . .
+
 
 # Port exposé
 EXPOSE 3001
