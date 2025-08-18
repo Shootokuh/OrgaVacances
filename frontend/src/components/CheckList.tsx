@@ -64,8 +64,7 @@ export default function CheckList({ destination, startDate, endDate }: { destina
     }
   };
 
-  // Supprimer une tâche
-  const handleDelete = async (id: number) => {
+  // // Supprimer une tâche
   // const handleDelete = async (id: number) => {
   //   setLoading(true);
   //   try {
@@ -80,9 +79,7 @@ export default function CheckList({ destination, startDate, endDate }: { destina
   //   } finally {
   //     setLoading(false);
   //   }
-  // }; // Non utilisé
-  // const handleCheckboxChange = (_e: React.ChangeEvent<HTMLInputElement>, id: number) => {} // Non utilisé
-  // const handleEdit = (_e: React.MouseEvent<HTMLButtonElement>, id: number) => {} // Non utilisé
+  // };
 
   return (
     <div className="checklist-card">
