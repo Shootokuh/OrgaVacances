@@ -5,5 +5,6 @@ export type Activity = {
   description?: string;
   date: string;
   time?: string;
+  end_time?: string;
   location?: string;
 };

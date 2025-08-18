@@ -17,16 +17,24 @@ export default function ModalEditActivity({
   const [description, setDescription] = useState(activity.description || "");
   const [date, setDate] = useState(activity.date.slice(0, 10));
   const [time, setTime] = useState(activity.time || "");
+  const [endTime, setEndTime] = useState(activity.end_time || "");
   const [location, setLocation] = useState(activity.location || "");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validation heure de fin >= heure de début
+    if (time && endTime && endTime < time) {
+      alert("L'heure de fin ne peut pas être avant l'heure de début.");
+      return;
+    }
 
     const updatedActivity = {
       title,
       description,
       date,
       time,
+      end_time: endTime,
       location,
     };
 
@@ -89,11 +97,19 @@ export default function ModalEditActivity({
           </div>
 
           <div className="form-group">
-            <label>Heure</label>
+            <label>Heure de début</label>
             <input
               type="time"
               value={time}
               onChange={(e) => setTime(e.target.value)}
+            />
+          </div>
+          <div className="form-group">
+            <label>Heure de fin</label>
+            <input
+              type="time"
+              value={endTime}
+              onChange={(e) => setEndTime(e.target.value)}
             />
           </div>
 

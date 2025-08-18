@@ -13,17 +13,25 @@ export default function ModalAddActivity({ onClose, tripId, onActivityAdded, def
   const [title, setTitle] = useState("");
   const [date, setDate] = useState(defaultDate || "");
   const [time, setTime] = useState("");
+  const [endTime, setEndTime] = useState("");
   const [location, setLocation] = useState("");
   const [description, setDescription] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Validation heure de fin >= heure de début
+    if (time && endTime && endTime < time) {
+      alert("L'heure de fin ne peut pas être avant l'heure de début.");
+      return;
+    }
+
     const newActivity = {
       trip_id: tripId,
       title,
       date,
       time: time || null,
+      end_time: endTime || null,
       location: location || null,
       description,
     };
@@ -75,11 +83,19 @@ export default function ModalAddActivity({ onClose, tripId, onActivityAdded, def
           </div>
 
           <div className="form-group">
-            <label>Heure (optionnelle)</label>
+            <label>Heure de début (optionnelle)</label>
             <input
               type="time"
               value={time}
               onChange={(e) => setTime(e.target.value)}
+            />
+          </div>
+          <div className="form-group">
+            <label>Heure de fin (optionnelle)</label>
+            <input
+              type="time"
+              value={endTime}
+              onChange={(e) => setEndTime(e.target.value)}
             />
           </div>
 

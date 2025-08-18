@@ -5,6 +5,7 @@ import type { Trip } from "../types/trip";
 import type { Activity } from "../types/activity";
 import ModalAddActivity from "./ModalAddActivity";
 import ModalEditActivity from "./ModalEditActivity";
+import CalendarView from "./CalendarView";
 import { apiFetch } from "../utils/api";
 
 export default function TripDetails() {
@@ -14,6 +15,7 @@ export default function TripDetails() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
+  const [showCalendar, setShowCalendar] = useState(false);
 
   useEffect(() => {
     apiFetch(`http://localhost:3001/api/trips`)
@@ -65,8 +67,10 @@ export default function TripDetails() {
 
   if (!trip) return <p style={{ padding: "2rem" }}>Chargement...</p>;
 
+
+
   return (
-    <div className="trip-details-container" style={{ background: '#fafbfc', borderRadius: 16, boxShadow: '0 2px 12px #0001', padding: '2.5rem 2rem', maxWidth: 700, margin: '2rem auto' }}>
+    <div className="trip-details-container" style={{ background: '#fafbfc', borderRadius: 16, boxShadow: '0 2px 12px #0001', padding: '2.5rem 2rem', maxWidth: 1400, margin: '2rem auto' }}>
       <div style={{ textAlign: 'center', marginBottom: 32 }}>
         <h1 className="trip-details-title" style={{ fontSize: '2.2rem', fontWeight: 700, margin: 0 }}>{trip.destination}</h1>
         <div className="trip-details-dates" style={{ color: '#888', fontSize: '1.1rem', margin: '0.5rem 0 0.5rem 0' }}>
@@ -74,86 +78,100 @@ export default function TripDetails() {
         </div>
       </div>
 
-      <div style={{ marginBottom: 32 }}>
-        {sortedDates.length === 0 && (
-          <div style={{ textAlign: 'center', color: '#aaa', fontStyle: 'italic', margin: '2rem 0' }}>
-            Aucune activité planifiée pour ce voyage.
-          </div>
-        )}
-        {sortedDates.map((date) => (
-          <section className="trip-day-section" key={date} style={{ marginBottom: 28 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
-              <span style={{ fontWeight: 600, fontSize: '1.1rem', color: '#645a5a', letterSpacing: 0.5 }}>
-                {new Date(date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
-              </span>
-              <div style={{ flex: 1, height: 1, background: '#eee', marginLeft: 8 }} />
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {groupedActivities[date].map((act) => (
-                <div key={act.id} style={{
-                  background: '#fff',
-                  borderRadius: 10,
-                  boxShadow: '0 1px 4px #0001',
-                  padding: '1rem 1.2rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: 12
-                }}>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 600, fontSize: '1.05rem', marginBottom: 2 }}>{act.title}</div>
-                    <div style={{ color: '#555', fontSize: '0.98rem', marginBottom: 2 }}>
-                      {act.location && <span>📍 {act.location} </span>}
-                      {act.time && <span>· 🕒 {act.time.slice(0, 5)} </span>}
-                    </div>
-                    {act.description && <div style={{ color: '#888', fontSize: '0.97rem', marginTop: 2 }}>{act.description}</div>}
-                  </div>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    <button
-                      title="Modifier"
-                      onClick={() => {
-                        setSelectedActivity(act);
-                        setShowEditModal(true);
-                      }}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        color: '#645a5a',
-                        fontSize: 20,
-                        cursor: 'pointer',
-                        padding: 4,
-                        borderRadius: 6,
-                        transition: 'background 0.2s',
-                      }}
-                      onMouseOver={e => (e.currentTarget.style.background = '#f2f2f2')}
-                      onMouseOut={e => (e.currentTarget.style.background = 'none')}
-                    >
-                      ✏️
-                    </button>
-                    <button
-                      title="Supprimer"
-                      onClick={() => handleDeleteActivity(act.id)}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        color: '#b33',
-                        fontSize: 20,
-                        cursor: 'pointer',
-                        padding: 4,
-                        borderRadius: 6,
-                        transition: 'background 0.2s',
-                      }}
-                      onMouseOver={e => (e.currentTarget.style.background = '#fbeaea')}
-                      onMouseOut={e => (e.currentTarget.style.background = 'none')}
-                    >
-                      🗑️
-                    </button>
-                  </div>
+      <div style={{ display: 'flex', gap: 32, alignItems: 'flex-start' }}>
+        {/* Colonne gauche : liste des activités */}
+        <div style={{ flex: 1, minWidth: 340, maxWidth: 500 }}>
+          <div style={{ marginBottom: 32 }}>
+            {sortedDates.length === 0 && (
+              <div style={{ textAlign: 'center', color: '#aaa', fontStyle: 'italic', margin: '2rem 0' }}>
+                Aucune activité planifiée pour ce voyage.
+              </div>
+            )}
+            {sortedDates.map((date) => (
+              <section className="trip-day-section" key={date} style={{ marginBottom: 28 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+                  <span style={{ fontWeight: 600, fontSize: '1.1rem', color: '#645a5a', letterSpacing: 0.5 }}>
+                    {new Date(date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
+                  </span>
+                  <div style={{ flex: 1, height: 1, background: '#eee', marginLeft: 8 }} />
                 </div>
-              ))}
-            </div>
-          </section>
-        ))}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {groupedActivities[date].map((act) => (
+                    <div key={act.id} style={{
+                      background: '#fff',
+                      borderRadius: 10,
+                      boxShadow: '0 1px 4px #0001',
+                      padding: '1rem 1.2rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: 12
+                    }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 600, fontSize: '1.05rem', marginBottom: 2 }}>{act.title}</div>
+                        <div style={{ color: '#555', fontSize: '0.98rem', marginBottom: 2 }}>
+                          {act.location && <span>📍 {act.location} </span>}
+                          {act.time && (
+                            <span>
+                              · 🕒 {act.time.slice(0, 5)}
+                              {act.end_time && ` - ${act.end_time.slice(0, 5)}`}
+                            </span>
+                          )}
+                        </div>
+                        {act.description && <div style={{ color: '#888', fontSize: '0.97rem', marginTop: 2 }}>{act.description}</div>}
+                      </div>
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        <button
+                          title="Modifier"
+                          onClick={() => {
+                            setSelectedActivity(act);
+                            setShowEditModal(true);
+                          }}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            color: '#645a5a',
+                            fontSize: 20,
+                            cursor: 'pointer',
+                            padding: 4,
+                            borderRadius: 6,
+                            transition: 'background 0.2s',
+                          }}
+                          onMouseOver={e => (e.currentTarget.style.background = '#f2f2f2')}
+                          onMouseOut={e => (e.currentTarget.style.background = 'none')}
+                        >
+                          ✏️
+                        </button>
+                        <button
+                          title="Supprimer"
+                          onClick={() => handleDeleteActivity(act.id)}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            color: '#b33',
+                            fontSize: 20,
+                            cursor: 'pointer',
+                            padding: 4,
+                            borderRadius: 6,
+                            transition: 'background 0.2s',
+                          }}
+                          onMouseOver={e => (e.currentTarget.style.background = '#fbeaea')}
+                          onMouseOut={e => (e.currentTarget.style.background = 'none')}
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            ))}
+          </div>
+        </div>
+        {/* Colonne droite : calendrier */}
+        <div style={{ flex: 2, minWidth: 400 }}>
+          <CalendarView activities={activities} />
+        </div>
       </div>
 
       <div style={{ textAlign: 'center', marginTop: 32 }}>

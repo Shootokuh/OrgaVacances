@@ -16,7 +16,7 @@ exports.getActivitiesByTrip = async (req, res) => {
 };
 
 exports.addActivity = async (req, res) => {
-  const { trip_id, title, date, description, time, location } = req.body;
+  const { trip_id, title, date, description, time, end_time, location } = req.body;
 
   if (!trip_id || !title || !date) {
     return res.status(400).json({ error: "Champs requis manquants" });
@@ -24,10 +24,10 @@ exports.addActivity = async (req, res) => {
 
   try {
     const result = await pool.query(
-      `INSERT INTO activities (trip_id, title, date, description, time, location)
-      VALUES ($1, $2, $3, $4, $5, $6)
+      `INSERT INTO activities (trip_id, title, date, description, time, end_time, location)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
       RETURNING *`,
-      [trip_id, title, date, description, time, location]
+      [trip_id, title, date, description, time, end_time, location]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -49,7 +49,7 @@ exports.deleteActivity = async (req, res) => {
 
 exports.updateActivity = async (req, res) => {
   const activityId = parseInt(req.params.id);
-  const { title, date, time, location, description } = req.body;
+  const { title, date, time, end_time, location, description } = req.body;
 
   if (!title || !date) {
     return res.status(400).json({ error: "Champs requis manquants" });
@@ -61,14 +61,16 @@ exports.updateActivity = async (req, res) => {
        SET title = $1,
            date = $2,
            time = $3,
-           location = $4,
-           description = $5
-       WHERE id = $6
+           end_time = $4,
+           location = $5,
+           description = $6
+       WHERE id = $7
        RETURNING *`,
       [
         title,
         date,
         time === "" ? null : time,
+        end_time === "" ? null : end_time,
         location === "" ? null : location,
         description,
         activityId,
