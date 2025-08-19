@@ -55,7 +55,7 @@ export default function TripList() {
   return (
     <div className="trip-container">
       <h1 className="trip-title">
-        Bienvenue {user ? user.name : "Pierre"} !
+        Bienvenue {user ? user.name : ""} !
       </h1>
       <button
         style={{ position: 'absolute', top: 24, right: 32, background: '#2563eb', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 16px', fontWeight: 600, cursor: 'pointer', fontSize: '1rem', boxShadow: '0 2px 8px #0002' }}
