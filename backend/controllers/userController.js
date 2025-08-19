@@ -122,7 +122,7 @@ exports.forgotPassword = async (req, res) => {
         pass: process.env.SMTP_PASS || 'pass'
       }
     });
-    const resetUrl = `http://localhost:5173/reset-password?token=${resetToken}`;
+    const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
     await transporter.sendMail({
       from: 'no-reply@planmytrip.com',
       to: user.email,
