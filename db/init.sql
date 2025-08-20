@@ -26,9 +26,9 @@ CREATE TABLE activities (
   trip_id INTEGER REFERENCES trips(id) ON DELETE CASCADE,
   title TEXT NOT NULL,
   date DATE NOT NULL,
-  time TIME,          -- 🆕 heure de début de l’activité
-  end_time TIME,      -- 🆕 heure de fin de l’activité
-  location TEXT,      -- 🆕 lieu de l’activité
+  time TIME,
+  end_time TIME,
+  location TEXT,
   description TEXT
 );
 
@@ -48,4 +48,16 @@ CREATE TABLE checklistitems (
   title TEXT NOT NULL,
   is_checked BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE participants (
+  id SERIAL PRIMARY KEY,
+  trip_id INTEGER REFERENCES trips(id) ON DELETE CASCADE,
+  name TEXT NOT NULL
+);
+
+CREATE TABLE expense_participants (
+  expense_id INTEGER REFERENCES expenses(id) ON DELETE CASCADE,
+  participant_id INTEGER REFERENCES participants(id) ON DELETE CASCADE,
+  PRIMARY KEY (expense_id, participant_id)
 );

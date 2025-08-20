@@ -6,6 +6,8 @@ import "../styles/BudgetPage.css";
 import type { Trip } from "../types/trip";
 import type { Expense } from "../types/expense";
 import { apiFetch } from "../utils/api";
+import ParticipantsManager from "./ParticipantsManager";
+import { computeSettlements } from "../utils/tricount";
 
 
 export default function BudgetPage() {
@@ -17,6 +19,15 @@ export default function BudgetPage() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [editExpense, setEditExpense] = useState<Expense|null>(null);
+  const [participants, setParticipants] = useState<{ id: number; name: string }[]>([]);
+
+  // Récupérer les participants du voyage
+  useEffect(() => {
+    if (!id) return;
+    apiFetch(`/api/participants/${id}`)
+      .then(res => res.json())
+      .then(setParticipants);
+  }, [id]);
 
   useEffect(() => {
     if (!id) return;
@@ -39,12 +50,16 @@ export default function BudgetPage() {
   // Trie les dépenses par date croissante (plus ancienne en haut)
   const sortedExpenses = [...expenses].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
+  // Calcul des remboursements optimisés façon Tricount
+  const settlements = computeSettlements(participants, expenses);
+
   return (
     <>
       <div className="budget-page-container">
         <h1>Suivi du budget</h1>
         {trip && (
           <>
+            <ParticipantsManager tripId={String(trip.id)} participants={participants} setParticipants={setParticipants} />
             <h2>{trip.destination}</h2>
             <p>📆 {new Date(trip.start_date).toLocaleDateString()} – {new Date(trip.end_date).toLocaleDateString()}</p>
             <p>
@@ -148,18 +163,20 @@ export default function BudgetPage() {
               <th>Description</th>
               <th>Date de paiement</th>
               <th>Paiement par</th>
+              <th>Bénéficiaires</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {sortedExpenses.map((exp) => (
               <tr key={exp.id}>
-                <td>{exp.amount} €</td>
-                <td>{exp.category}</td>
-                <td>{exp.description || "-"}</td>
-                <td>{new Date(exp.date).toLocaleDateString()}</td>
-                <td>{exp.paid_by || "-"}</td>
-                <td style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
+                <td data-label="Montant">{exp.amount} €</td>
+                <td data-label="Catégorie">{exp.category}</td>
+                <td data-label="Description">{exp.description || "-"}</td>
+                <td data-label="Date de paiement">{new Date(exp.date).toLocaleDateString()}</td>
+                <td data-label="Paiement par">{exp.paid_by || "-"}</td>
+                <td data-label="Bénéficiaires">{exp.participants && exp.participants.length > 0 ? exp.participants.map(p => p.name).join(', ') : '-'}</td>
+                <td data-label="Actions" style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
                   <button
                     title="Modifier"
                     style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18 }}
@@ -179,11 +196,29 @@ export default function BudgetPage() {
           </tbody>
         </table>
         <button className="add-expense-btn" onClick={() => setShowModal(true)}>+ Ajouter une dépense</button>
+
+        {/* Affichage des remboursements optimisés */}
+        {settlements.length > 0 && (
+          <div style={{ marginTop: 32, background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px #0001', padding: 24, maxWidth: 500, marginLeft: 'auto', marginRight: 'auto' }}>
+            <h3 style={{ textAlign: 'center', marginBottom: 16 }}>Remboursements optimisés</h3>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+              {settlements.map((s, i) => (
+                <li key={i} style={{ marginBottom: 8, fontSize: '1.08rem', color: '#333', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontWeight: 600 }}>{s.from}</span>
+                  <span style={{ color: '#888' }}>→</span>
+                  <span style={{ fontWeight: 600 }}>{s.to}</span>
+                  <span style={{ marginLeft: 8, color: '#1976d2', fontWeight: 700 }}>{s.amount} €</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
         {showModal && (
           <ModalAddExpense
             tripId={id as string}
+            participants={participants}
             onClose={() => setShowModal(false)}
-            onExpenseAdded={(expense) => {
+            onExpenseAdded={(expense: Expense) => {
               setExpenses((prev) => [...prev, expense]);
               setShowModal(false);
             }}
@@ -192,6 +227,7 @@ export default function BudgetPage() {
         {editExpense && (
           <ModalEditExpense
             expense={editExpense}
+            participants={participants}
             onClose={() => setEditExpense(null)}
             onExpenseUpdated={(updated) => {
               setExpenses((prev) => prev.map(e => e.id === updated.id ? updated : e));

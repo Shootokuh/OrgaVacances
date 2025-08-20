@@ -39,9 +39,18 @@ const AuthPortal: React.FC<AuthPortalProps> = ({ setToken }) => {
     // Helper pour récupérer le token
   const getToken = () => localStorage.getItem('token');
 
+  const validateEmail = (email: string) => {
+    // Simple regex pour vérifier le format email
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    if (!validateEmail(loginEmail)) {
+      setError('Veuillez entrer un email valide (ex: nom@domaine.com)');
+      return;
+    }
     try {
       const res = await fetch(`http://localhost:3001/api/users/login`, {
         method: 'POST',
@@ -61,6 +70,10 @@ const AuthPortal: React.FC<AuthPortalProps> = ({ setToken }) => {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    if (!validateEmail(registerEmail)) {
+      setError('Veuillez entrer un email valide (ex: nom@domaine.com)');
+      return;
+    }
     try {
       const res = await fetch(`http://localhost:3001/api/users/register`, {
         method: 'POST',
@@ -98,7 +111,7 @@ const AuthPortal: React.FC<AuthPortalProps> = ({ setToken }) => {
   return (
     <div className="auth-portal">
       <div style={{ textAlign: 'center', marginBottom: 24 }}>
-        <h1 style={{ fontWeight: 700, fontSize: '2rem', margin: '0 0 8px 0', color: '#1976d2' }}>PlanMyTrip</h1>
+        <h1 style={{ fontWeight: 700, fontSize: '2rem', margin: '0 0 8px 0', color: '#1976d2' }}>OrgaVacances</h1>
         <h2 style={{ fontWeight: 600, fontSize: '1.5rem', margin: '0 0 24px 0' }}>
           {tab === 'login' ? 'Se connecter' : tab === 'register' ? 'Inscription' : 'Mot de passe oublié'}
         </h2>

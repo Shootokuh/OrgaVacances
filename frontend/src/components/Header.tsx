@@ -21,10 +21,11 @@ export default function Header() {
 
   return (
     <header className="header">
-      <div className="header-title">PlanMyTrip</div>
+      <div className="header-title">OrgaVacances</div>
       <nav className="header-nav">
         <Link to="/">Voyages</Link>
         <Link to={`/trip/${tripId}`}>Le planning</Link>
+        <Link to={`/trip/${tripId}/calendar`}>Calendrier</Link>
         <Link to={`/trip/${tripId}/budget`}>Budget</Link>
         <Link to={`/trip/${tripId}/checklist`}>Checklist</Link>
       </nav>

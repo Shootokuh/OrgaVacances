@@ -7,6 +7,7 @@ const tripRoutes = require('./routes/tripRoutes');
 const activityRoutes = require('./routes/activityRoutes');
 const expenseRoutes = require('./routes/expenseRoutes');
 const checklistRoutes = require('./routes/checklistRoutes');
+const participantRoutes = require('./routes/participantRoutes');
 
 const app = express();
 app.use(cors());
@@ -19,6 +20,7 @@ app.use('/api/trips', tripRoutes);
 app.use('/api/activities', activityRoutes);
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/checklist', checklistRoutes);
+app.use('/api/participants', participantRoutes);
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`🚀 Backend lancé sur http://localhost:${PORT}`);

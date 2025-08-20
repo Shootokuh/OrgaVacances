@@ -3,6 +3,7 @@ import '../styles/CalendarView.css';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
+import frLocale from '@fullcalendar/core/locales/fr';
 import type { Activity } from '../types/activity';
 
 // Affiche les activités dans un calendrier FullCalendar
@@ -45,6 +46,7 @@ export default function CalendarView({ activities }: CalendarViewProps) {
         }}
         events={events}
         height={600}
+        locale={frLocale}
       />
     </div>
   );
