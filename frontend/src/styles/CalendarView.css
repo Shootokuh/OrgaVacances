@@ -122,5 +122,6 @@
   border: none !important;
 }
 .fc-timegrid-slots tr {
-  height: 32px;
+  height: 64px;
 }
+
