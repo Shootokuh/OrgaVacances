@@ -39,11 +39,21 @@ exports.addTrip = async (req, res) => {
   }
   const { title, destination, start_date, end_date } = req.body;
   try {
+    // Récupérer le nom de l'utilisateur
+    const userResult = await pool.query('SELECT name FROM users WHERE id = $1', [userId]);
+    const userName = userResult.rows[0]?.name || 'Moi';
+
+    // Créer le voyage
     const result = await pool.query(
       'INSERT INTO trips (user_id, title, destination, start_date, end_date) VALUES ($1, $2, $3, $4, $5) RETURNING *',
       [userId, title, destination, start_date, end_date]
     );
-    res.status(201).json(result.rows[0]);
+    const trip = result.rows[0];
+
+    // Ajouter le créateur comme participant
+    await pool.query('INSERT INTO participants (trip_id, name) VALUES ($1, $2)', [trip.id, userName]);
+
+    res.status(201).json(trip);
   } catch (err) {
     console.error('Erreur addTrip:', err);
     res.status(500).json({ error: 'Erreur serveur' });

@@ -1,11 +1,23 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
+// Pour rendre les liens cliquables
+function renderWithLinks(text: string) {
+  if (!text) return null;
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  const parts = text.split(urlRegex);
+  return parts.map((part, i) => {
+    if (urlRegex.test(part)) {
+      return <a key={i} href={part} target="_blank" rel="noopener noreferrer" style={{ color: '#1a73e8', textDecoration: 'underline' }}>{part}</a>;
+    }
+    return part;
+  });
+}
 import "../styles/TripDetails.css";
 import type { Trip } from "../types/trip";
 import type { Activity } from "../types/activity";
 import ModalAddActivity from "./ModalAddActivity";
 import ModalEditActivity from "./ModalEditActivity";
-import CalendarView from "./CalendarView";
+// import CalendarView from "./CalendarView";
 import { apiFetch } from "../utils/api";
 
 export default function TripDetails() {
@@ -15,7 +27,7 @@ export default function TripDetails() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
-  // const [showCalendar, setShowCalendar] = useState(false); // Non utilisé
+  // const [showCalendar, setShowCalendar] = useState(false);
 
   useEffect(() => {
   apiFetch(`/api/trips`)
@@ -118,7 +130,11 @@ export default function TripDetails() {
                             </span>
                           )}
                         </div>
-                        {act.description && <div style={{ color: '#888', fontSize: '0.97rem', marginTop: 2 }}>{act.description}</div>}
+                        {act.description && (
+                          <div style={{ color: '#888', fontSize: '0.97rem', marginTop: 2 }}>
+                            {renderWithLinks(act.description)}
+                          </div>
+                        )}
                       </div>
                       <div style={{ display: 'flex', gap: 8 }}>
                         <button
@@ -169,9 +185,9 @@ export default function TripDetails() {
           </div>
         </div>
         {/* Colonne droite : calendrier */}
-        <div style={{ flex: 2, minWidth: 400 }}>
+        {/* <div style={{ flex: 2, minWidth: 400 }}>
           <CalendarView activities={activities} />
-        </div>
+        </div> */}
       </div>
 
       <div style={{ textAlign: 'center', marginTop: 32 }}>

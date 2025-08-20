@@ -1,14 +1,9 @@
-import { useState } from "react";
 import "../styles/ModalAddExpense.css";
 import { apiFetch } from '../utils/api';
+import { useState, useEffect } from "react";
+import type { ModalAddExpenseProps } from "../types/expense";
 
-export type ModalAddExpenseProps = {
-  tripId: number | string;
-  onClose: () => void;
-  onExpenseAdded: (expense: any) => void;
-};
-
-export default function ModalAddExpense({ tripId, onClose, onExpenseAdded }: ModalAddExpenseProps) {
+export default function ModalAddExpense({ tripId, participants, onClose, onExpenseAdded }: ModalAddExpenseProps) {
   const [form, setForm] = useState({
     amount: '',
     category: '',
@@ -19,10 +14,30 @@ export default function ModalAddExpense({ tripId, onClose, onExpenseAdded }: Mod
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // Préremplir paid_by si un seul participant
+  useEffect(() => {
+    if (participants.length === 1) {
+      setForm(f => ({ ...f, paid_by: participants[0].name }));
+    }
+  }, [participants]);
+
+  // Sélection des bénéficiaires
+  const [selectedParticipants, setSelectedParticipants] = useState<number[]>(participants.map((p: { id: number; name: string }) => p.id));
+
+  const handleParticipantChange = (id: number) => {
+    setSelectedParticipants((prev: number[]) =>
+      prev.includes(id) ? prev.filter((pid: number) => pid !== id) : [...prev, id]
+    );
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.amount || !form.category || !form.date) {
       setError('Montant, catégorie et date requis');
+      return;
+    }
+    if (selectedParticipants.length === 0) {
+      setError('Sélectionnez au moins un bénéficiaire');
       return;
     }
     setLoading(true);
@@ -36,16 +51,17 @@ export default function ModalAddExpense({ tripId, onClose, onExpenseAdded }: Mod
           category: form.category,
           description: form.description,
           date: form.date,
-          paid_by: form.paid_by
+          paid_by: form.paid_by,
+          participant_ids: selectedParticipants
         })
       });
-      if (!res.ok) throw new Error('Erreur lors de l\'ajout');
+      if (!res.ok) throw new Error("Erreur lors de l'ajout");
       const newExpense = await res.json();
       onExpenseAdded(newExpense);
       setError('');
       onClose();
     } catch (err) {
-      setError('Erreur lors de l\'envoi');
+      setError("Erreur lors de l'envoi");
     } finally {
       setLoading(false);
     }
@@ -56,6 +72,21 @@ export default function ModalAddExpense({ tripId, onClose, onExpenseAdded }: Mod
       <div className="modal-content">
         <h2>Ajouter une dépense</h2>
         <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label>Bénéficiaires</label>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {participants.map((p: { id: number; name: string }) => (
+                <label key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <input
+                    type="checkbox"
+                    checked={selectedParticipants.includes(p.id)}
+                    onChange={() => handleParticipantChange(p.id)}
+                  />
+                  {p.name}
+                </label>
+              ))}
+            </div>
+          </div>
           <div className="form-group">
             <label>Montant</label>
             <input
@@ -97,13 +128,27 @@ export default function ModalAddExpense({ tripId, onClose, onExpenseAdded }: Mod
             />
           </div>
           <div className="form-group">
-            <label>Payé par (optionnel)</label>
-            <input
-              type="text"
-              placeholder="Payé par (optionnel)"
-              value={form.paid_by}
-              onChange={e => setForm(f => ({ ...f, paid_by: e.target.value }))}
-            />
+            <label>Payé par</label>
+            {participants && participants.length <= 1 ? (
+              <input
+                type="text"
+                value={form.paid_by}
+                // Sélection des bénéficiaires
+                disabled
+                style={{ background: '#f5f5f5', color: '#888' }}
+              />
+            ) : (
+              <select
+                value={form.paid_by}
+                onChange={e => setForm(f => ({ ...f, paid_by: e.target.value }))}
+                required
+              >
+                <option value="">Choisir...</option>
+                {participants && participants.map((p: { id: number; name: string }) => (
+                  <option key={p.id} value={p.name}>{p.name}</option>
+                ))}
+              </select>
+            )}
           </div>
           {error && <div style={{ color: 'red', marginBottom: 8 }}>{error}</div>}
           <div className="form-actions">
