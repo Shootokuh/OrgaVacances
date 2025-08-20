@@ -63,6 +63,8 @@ export default function TripDetails() {
     }
   };
 
+
+  // Trie les activités de chaque journée par horaire de début
   const groupedActivities = activities.reduce<Record<string, Activity[]>>(
     (acc, act) => {
       const date = act.date;
@@ -72,6 +74,15 @@ export default function TripDetails() {
     },
     {}
   );
+  
+  Object.keys(groupedActivities).forEach(date => {
+    groupedActivities[date].sort((a, b) => {
+      // Si pas d'heure, on considère comme 00:00
+      const tA = a.time ? a.time.slice(0,5) : '00:00';
+      const tB = b.time ? b.time.slice(0,5) : '00:00';
+      return tA.localeCompare(tB);
+    });
+  });
 
   const sortedDates = Object.keys(groupedActivities).sort(
     (a, b) => new Date(a).getTime() - new Date(b).getTime()

@@ -51,26 +51,8 @@ export default function CalendarView({ activities }: CalendarViewProps) {
   });
 
   // Détermine la fin la plus tardive des activités (par défaut 24:00), début à 06:00
-  let latestEnd = "24:00:00";
-  let earliestStart = "06:00:00";
-  for (const act of activities) {
-    if (act.end_time) {
-      const h = act.end_time.slice(0, 2);
-      const m = act.end_time.slice(3, 5);
-      if (h && m) {
-        const actEnd = `${h.padStart(2, '0')}:${m.padStart(2, '0')}:00`;
-        if (actEnd > latestEnd) latestEnd = actEnd;
-      }
-    }
-    if (act.time) {
-      const h = act.time.slice(0, 2);
-      const m = act.time.slice(3, 5);
-      const actStart = `${h.padStart(2, '0')}:${m.padStart(2, '0')}:00`;
-      if (actStart < earliestStart) earliestStart = actStart;
-    }
-  }
-  if (latestEnd < "24:00:00") latestEnd = "24:00:00";
-  if (earliestStart > "06:00:00") earliestStart = "06:00:00";
+  const earliestStart = "00:00:00";
+  const latestEnd = "24:00:00";
 
   return (
     <div style={{ background: '#fff', borderRadius: 12, padding: 16 }}>
@@ -85,11 +67,11 @@ export default function CalendarView({ activities }: CalendarViewProps) {
         events={events}
         height={"auto"}
         locale={frLocale}
-        slotMinTime={earliestStart}
-        slotMaxTime={latestEnd}
+  slotMinTime={earliestStart}
+  slotMaxTime={latestEnd}
         slotDuration="02:00:00"
         slotLabelInterval="02:00"
-        allDaySlot={false}
+        allDaySlot={true}
         expandRows={true}
       />
     </div>
