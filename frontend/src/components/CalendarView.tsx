@@ -6,6 +6,8 @@ import interactionPlugin from '@fullcalendar/interaction';
 import frLocale from '@fullcalendar/core/locales/fr';
 import type { Activity } from '../types/activity';
 
+import { useEffect, useState } from 'react';
+
 // Affiche les activités dans un calendrier FullCalendar
 
 type CalendarViewProps = {
@@ -13,6 +15,20 @@ type CalendarViewProps = {
 };
 
 export default function CalendarView({ activities }: CalendarViewProps) {
+  // Gère la vue initiale selon la largeur d'écran
+  const [initialView, setInitialView] = useState('dayGridMonth');
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth <= 700) {
+        setInitialView('timeGridDay');
+      } else {
+        setInitialView('dayGridMonth');
+      }
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   // Mappe les activités au format FullCalendar avec format ISO correct
   const events = activities.map(act => {
     // Prend uniquement la partie date (YYYY-MM-DD)
@@ -34,19 +50,47 @@ export default function CalendarView({ activities }: CalendarViewProps) {
     };
   });
 
+  // Détermine la fin la plus tardive des activités (par défaut 24:00), début à 06:00
+  let latestEnd = "24:00:00";
+  let earliestStart = "06:00:00";
+  for (const act of activities) {
+    if (act.end_time) {
+      const h = act.end_time.slice(0, 2);
+      const m = act.end_time.slice(3, 5);
+      if (h && m) {
+        const actEnd = `${h.padStart(2, '0')}:${m.padStart(2, '0')}:00`;
+        if (actEnd > latestEnd) latestEnd = actEnd;
+      }
+    }
+    if (act.time) {
+      const h = act.time.slice(0, 2);
+      const m = act.time.slice(3, 5);
+      const actStart = `${h.padStart(2, '0')}:${m.padStart(2, '0')}:00`;
+      if (actStart < earliestStart) earliestStart = actStart;
+    }
+  }
+  if (latestEnd < "24:00:00") latestEnd = "24:00:00";
+  if (earliestStart > "06:00:00") earliestStart = "06:00:00";
+
   return (
     <div style={{ background: '#fff', borderRadius: 12, padding: 16 }}>
       <FullCalendar
         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-        initialView="dayGridMonth"
+        initialView={initialView}
         headerToolbar={{
           left: 'prev,next today',
           center: 'title',
           right: 'dayGridMonth,timeGridWeek,timeGridDay'
         }}
         events={events}
-        height={600}
+        height={"auto"}
         locale={frLocale}
+        slotMinTime={earliestStart}
+        slotMaxTime={latestEnd}
+        slotDuration="02:00:00"
+        slotLabelInterval="02:00"
+        allDaySlot={false}
+        expandRows={true}
       />
     </div>
   );

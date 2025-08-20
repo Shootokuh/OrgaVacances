@@ -15,16 +15,25 @@
   font-size: 1.8rem;
   font-weight: bold;
   color: #1e1e1e;
+.trip-day-section > div > div {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 8px 32px #1976d220, 0 2px 8px #1976d220;
+  border: 2px solid #c3d0f7;
+  padding: 1.15rem 1.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  transition: box-shadow 0.22s cubic-bezier(.4,1,.7,1), border 0.18s, background 0.18s;
+  position: relative;
+  z-index: 1;
 }
-
-.trip-details-dates {
-  font-size: 1rem;
-  color: #555;
-  margin-bottom: 2rem;
+.trip-day-section > div > div:hover {
+  box-shadow: 0 12px 36px #1976d240, 0 4px 16px #1976d220;
+  border: 2px solid #1976d2;
+  background: #f5f8ff;
 }
-
-.trip-day-section {
-  margin-bottom: 2rem;
 }
 
 .trip-day-title {
