@@ -32,7 +32,7 @@ const ModalHotelForm: React.FC<Props> = ({ open, onClose, onSubmit, initial, isE
       if (isNaN(date.getTime())) return "";
       return date.toISOString().slice(0, 10);
     };
-    setHotel(h => ({
+    setHotel(() => ({
       ...defaultHotel,
       ...initial,
       start_date: formatDate(initial?.start_date),
