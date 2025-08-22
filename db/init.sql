@@ -61,3 +61,15 @@ CREATE TABLE expense_participants (
   participant_id INTEGER REFERENCES participants(id) ON DELETE CASCADE,
   PRIMARY KEY (expense_id, participant_id)
 );
+
+CREATE TABLE hotels (
+  id SERIAL PRIMARY KEY,
+  trip_id INTEGER REFERENCES trips(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  address TEXT,
+  start_date DATE,
+  end_date DATE,
+  reserved BOOLEAN DEFAULT FALSE,
+  notes TEXT,
+  link TEXT
+);
