@@ -1,8 +1,208 @@
 .trip-details-container {
-  padding: 2rem;
-  max-width: 800px;
-  margin: auto;
+  display: flex;
+/* accolade supprimée ici, car elle était en trop et cassait le CSS */
+  max-width: 1100px;
+  margin: 2rem auto;
+  background: #fafbfc;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px #0001;
   font-family: "Segoe UI", sans-serif;
+}
+
+.trip-details-nav {
+  min-width: 140px;
+  background: #f4f7fb;
+  border-radius: 16px 0 0 16px;
+  padding: 2.5rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+@media (max-width: 600px) {
+  .trip-details-container {
+    flex-direction: column;
+    max-width: 100vw;
+    margin: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .trip-details-nav {
+    min-width: 100%;
+    flex-direction: row;
+    gap: 0;
+    border-radius: 0;
+    padding: 0.5rem 0;
+    justify-content: center;
+    background: #f4f7fb;
+    box-shadow: 0 1px 4px #0001;
+  }
+  .trip-details-nav button {
+    flex: 1;
+    margin-bottom: 0;
+    border-radius: 0;
+    font-size: 1rem;
+    padding: 10px 0;
+  }
+  .trip-details-main {
+    padding: 1rem 0.5rem;
+  }
+}
+
+.trip-details-nav button {
+  background: none;
+  color: #1976d2;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 17px;
+  padding: 10px 0;
+  cursor: pointer;
+  margin-bottom: 4px;
+  transition: background 0.2s, color 0.2s;
+}
+.trip-details-nav button.active {
+  background: #1976d2;
+  color: #fff;
+}
+
+.trip-details-main {
+  flex: 1;
+  padding: 2.5rem 2rem;
+}
+
+.trip-details-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+.trip-details-title {
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin: 0;
+}
+.trip-details-dates {
+  color: #888;
+  font-size: 1.1rem;
+  margin: 0.5rem 0 0.5rem 0;
+}
+
+.trip-details-activities {
+  margin-bottom: 32px;
+}
+.trip-details-empty {
+  text-align: center;
+  color: #aaa;
+  font-style: italic;
+  margin: 2rem 0;
+}
+
+.trip-day-section {
+  margin-bottom: 28px;
+}
+.trip-day-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.trip-day-date {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: #645a5a;
+  letter-spacing: 0.5px;
+}
+.trip-day-divider {
+  flex: 1;
+  height: 1px;
+  background: #eee;
+  margin-left: 8px;
+}
+.trip-day-activities {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.trip-activity-card {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 1px 4px #0001;
+  padding: 1rem 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  transition: box-shadow 0.18s, background 0.18s;
+}
+.trip-activity-card:hover {
+  box-shadow: 0 4px 16px #1976d220;
+  background: #f5f8ff;
+}
+.trip-activity-info {
+  flex: 1;
+}
+.trip-activity-title {
+  font-weight: 600;
+  font-size: 1.05rem;
+  margin-bottom: 2px;
+}
+.trip-activity-meta {
+  color: #555;
+  font-size: 0.98rem;
+  margin-bottom: 2px;
+}
+.trip-activity-desc {
+  color: #888;
+  font-size: 0.97rem;
+  margin-top: 2px;
+  word-break: break-word;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+.trip-activity-actions {
+  display: flex;
+  gap: 8px;
+}
+.trip-activity-edit, .trip-activity-delete {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+.trip-activity-edit {
+  color: #645a5a;
+}
+.trip-activity-edit:hover {
+  background: #f2f2f2;
+}
+.trip-activity-delete {
+  color: #b33;
+}
+.trip-activity-delete:hover {
+  background: #fbeaea;
+}
+.trip-add-btn-wrapper {
+  text-align: center;
+  margin-top: 32px;
+}
+.trip-add-btn {
+  background-color: #645a5a;
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.trip-add-btn:hover {
+  background: #1976d2;
+}
+.trip-link {
+  color: #1a73e8;
+  text-decoration: underline;
 }
 
 .trip-details-title {

@@ -10,11 +10,15 @@ import { useEffect, useState } from 'react';
 
 // Affiche les activités dans un calendrier FullCalendar
 
+
+import type { Hotel } from '../types/hotel';
+
 type CalendarViewProps = {
   activities: Activity[];
+  hotels?: Hotel[];
 };
 
-export default function CalendarView({ activities }: CalendarViewProps) {
+export default function CalendarView({ activities, hotels }: CalendarViewProps) {
   // Gère la vue initiale selon la largeur d'écran
   const [initialView, setInitialView] = useState('dayGridMonth');
   useEffect(() => {
@@ -29,9 +33,8 @@ export default function CalendarView({ activities }: CalendarViewProps) {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
-  // Mappe les activités au format FullCalendar avec format ISO correct
-  const events = activities.map(act => {
-    // Prend uniquement la partie date (YYYY-MM-DD)
+  // Mappe les activités au format FullCalendar
+  const activityEvents = activities.map(act => {
     const dateOnly = act.date.slice(0, 10);
     let start = dateOnly;
     let end = undefined;
@@ -42,13 +45,29 @@ export default function CalendarView({ activities }: CalendarViewProps) {
       end = `${dateOnly}T${act.end_time.length === 5 ? act.end_time + ':00' : act.end_time}`;
     }
     return {
-      id: String(act.id),
+      id: `activity-${act.id}`,
       title: act.title,
       start,
       ...(end ? { end } : {}),
       description: act.description,
+      color: '#2563eb',
     };
   });
+
+  // Mappe les hôtels réservés au format FullCalendar
+  const hotelEvents = (hotels || [])
+    .filter(h => h.reserved)
+    .map(hotel => ({
+      id: `hotel-${hotel.id}`,
+      title: `Hôtel réservé : ${hotel.name}`,
+      start: hotel.start_date.slice(0, 10),
+      end: hotel.end_date ? new Date(new Date(hotel.end_date).getTime() + 24*60*60*1000).toISOString().slice(0,10) : undefined,
+      description: hotel.address || '',
+      color: '#eab308', // jaune
+      allDay: true,
+    }));
+
+  const events = [...activityEvents, ...hotelEvents];
 
   // Détermine la fin la plus tardive des activités (par défaut 24:00), début à 06:00
   const earliestStart = "00:00:00";

@@ -1,0 +1,103 @@
+/* HotelList.css - Style moderne et cohérent avec TripDetails */
+
+.hotel-list-container {
+  max-width: 700px;
+  margin: 0 auto;
+  background: #f9fafb;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px #0001;
+  padding: 2rem 1.5rem;
+}
+
+.hotel-list-title {
+  font-size: 1.7rem;
+  font-weight: 700;
+  margin-bottom: 1.2rem;
+  text-align: center;
+}
+
+.hotel-card {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 1px 4px #0001;
+  padding: 1.1rem 1.3rem;
+  margin-bottom: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 1.5px solid #e3eaf7;
+  transition: box-shadow 0.18s, border 0.18s;
+}
+.hotel-card.reserved {
+  border-color: #1976d2;
+  box-shadow: 0 4px 16px #1976d220;
+}
+.hotel-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.hotel-card-name {
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+.hotel-card-address {
+  color: #555;
+  font-size: 0.98rem;
+}
+.hotel-card-dates {
+  color: #888;
+  font-size: 0.97rem;
+}
+.hotel-card-notes {
+  color: #1976d2;
+  font-size: 0.97rem;
+  margin-top: 2px;
+}
+.hotel-card-link {
+  color: #1a73e8;
+  text-decoration: underline;
+  font-size: 0.97rem;
+}
+.hotel-card-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 6px;
+}
+.hotel-card-edit, .hotel-card-delete {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+.hotel-card-edit {
+  color: #645a5a;
+}
+.hotel-card-edit:hover {
+  background: #f2f2f2;
+}
+.hotel-card-delete {
+  color: #b33;
+}
+.hotel-card-delete:hover {
+  background: #fbeaea;
+}
+.hotel-list-add-btn {
+  background-color: #645a5a;
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin: 1rem auto 0 auto;
+  display: block;
+}
+.hotel-list-add-btn:hover {
+  background: #1976d2;
+}

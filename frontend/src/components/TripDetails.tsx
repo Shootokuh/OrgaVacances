@@ -1,24 +1,28 @@
-import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-// Pour rendre les liens cliquables
+import { useParams } from "react-router-dom";
+import type { Trip } from "../types/trip";
+import type { Activity } from "../types/activity";
+import type { Hotel } from "../types/hotel";
+import HotelList from "./HotelList";
+import ModalAddActivity from "./ModalAddActivity";
+import ModalEditActivity from "./ModalEditActivity";
+import ModalHotelForm from "./ModalHotelForm";
+// import CalendarView from "./CalendarView";
+import { apiFetch } from "../utils/api";
+import "../styles/TripDetails.css";
+
+
 function renderWithLinks(text: string) {
   if (!text) return null;
   const urlRegex = /(https?:\/\/[^\s]+)/g;
   const parts = text.split(urlRegex);
-  return parts.map((part, i) => {
-    if (urlRegex.test(part)) {
-      return <a key={i} href={part} target="_blank" rel="noopener noreferrer" style={{ color: '#1a73e8', textDecoration: 'underline' }}>{part}</a>;
-    }
-    return part;
-  });
+  return parts.map((part, i) =>
+    urlRegex.test(part)
+      ? <a key={i} href={part} target="_blank" rel="noopener noreferrer" className="trip-link">{part}</a>
+      : part
+  );
 }
-import "../styles/TripDetails.css";
-import type { Trip } from "../types/trip";
-import type { Activity } from "../types/activity";
-import ModalAddActivity from "./ModalAddActivity";
-import ModalEditActivity from "./ModalEditActivity";
-// import CalendarView from "./CalendarView";
-import { apiFetch } from "../utils/api";
+
 
 export default function TripDetails() {
   const { id } = useParams();
@@ -27,10 +31,13 @@ export default function TripDetails() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
-  // const [showCalendar, setShowCalendar] = useState(false);
+  const [sideTab, setSideTab] = useState<'planning' | 'hotels'>('planning');
+  const [hotels, setHotels] = useState<Hotel[]>([]);
+  const [showHotelModal, setShowHotelModal] = useState(false);
+  const [editHotel, setEditHotel] = useState<Hotel | null>(null);
 
   useEffect(() => {
-    apiFetch(`http://localhost:3001/api/trips`)
+    apiFetch(`/api/trips`)
       .then((res) => res.json())
       .then((data) => {
         const foundTrip = data.find((t: Trip) => t.id === Number(id));
@@ -40,7 +47,7 @@ export default function TripDetails() {
 
   useEffect(() => {
     if (!id) return;
-    apiFetch(`http://localhost:3001/api/activities/trip/${id}`)
+    apiFetch(`/api/activities/trip/${id}`)
       .then((res) => res.json())
       .then((data) => setActivities(data));
   }, [id]);
@@ -51,12 +58,10 @@ export default function TripDetails() {
 
   const handleDeleteActivity = async (activityId: number) => {
     try {
-      const res = await apiFetch(`http://localhost:3001/api/activities/${activityId}`, {
+      const res = await apiFetch(`/api/activities/${activityId}`, {
         method: "DELETE",
       });
-
       if (!res.ok) throw new Error("Erreur lors de la suppression");
-
       setActivities((prev) => prev.filter((a) => a.id !== activityId));
     } catch (err) {
       console.error("Erreur suppression activité :", err);
@@ -64,165 +69,205 @@ export default function TripDetails() {
   };
 
 
+  // CRUD hôtels
+  useEffect(() => {
+    if (!id) return;
+    apiFetch(`/api/hotels/trip/${id}`)
+      .then(res => res.json())
+      .then(data => setHotels(data));
+  }, [id]);
+
+  const handleAddHotel = async (hotel: Omit<Hotel, "id">) => {
+    const res = await apiFetch(`/api/hotels`, {
+      method: "POST",
+      body: JSON.stringify({ ...hotel, trip_id: id })
+    });
+    if (res.ok) {
+      const newHotel = await res.json();
+      setHotels(prev => [...prev, newHotel]);
+    }
+  };
+
+  const handleEditHotel = async (hotel: Hotel) => {
+    const res = await apiFetch(`/api/hotels/${hotel.id}`, {
+      method: "PUT",
+      body: JSON.stringify(hotel)
+    });
+    if (res.ok) {
+      const updated = await res.json();
+      setHotels(prev => prev.map(h => h.id === updated.id ? updated : h));
+    }
+  };
+
+  const handleDeleteHotel = async (id: number) => {
+    const res = await apiFetch(`/api/hotels/${id}`, {
+      method: "DELETE"
+    });
+    if (res.ok) {
+      setHotels(prev => prev.filter(h => h.id !== id));
+    }
+  };
+
   // Trie les activités de chaque journée par horaire de début
-  const groupedActivities = activities.reduce<Record<string, Activity[]>>(
+  const groupedActivities: Record<string, Activity[]> = activities.reduce(
     (acc, act) => {
       const date = act.date;
       if (!acc[date]) acc[date] = [];
       acc[date].push(act);
       return acc;
     },
-    {}
+    {} as Record<string, Activity[]>
   );
-  
   Object.keys(groupedActivities).forEach(date => {
     groupedActivities[date].sort((a, b) => {
-      // Si pas d'heure, on considère comme 00:00
       const tA = a.time ? a.time.slice(0,5) : '00:00';
       const tB = b.time ? b.time.slice(0,5) : '00:00';
       return tA.localeCompare(tB);
     });
   });
-
   const sortedDates = Object.keys(groupedActivities).sort(
     (a, b) => new Date(a).getTime() - new Date(b).getTime()
   );
 
   if (!trip) return <p style={{ padding: "2rem" }}>Chargement...</p>;
 
-
-
   return (
-    <div className="trip-details-container" style={{ background: '#fafbfc', borderRadius: 16, boxShadow: '0 2px 12px #0001', padding: '2.5rem 2rem', maxWidth: 700, margin: '2rem auto' }}>
-      <div style={{ textAlign: 'center', marginBottom: 32 }}>
-        <h1 className="trip-details-title" style={{ fontSize: '2.2rem', fontWeight: 700, margin: 0 }}>{trip.destination}</h1>
-        <div className="trip-details-dates" style={{ color: '#888', fontSize: '1.1rem', margin: '0.5rem 0 0.5rem 0' }}>
-          {new Date(trip.start_date).toLocaleDateString()} – {new Date(trip.end_date).toLocaleDateString()}
-        </div>
-      </div>
-
-      <div style={{ marginBottom: 32 }}>
-        {sortedDates.length === 0 && (
-          <div style={{ textAlign: 'center', color: '#aaa', fontStyle: 'italic', margin: '2rem 0' }}>
-            Aucune activité planifiée pour ce voyage.
-          </div>
-        )}
-        {sortedDates.map((date) => (
-          <section className="trip-day-section" key={date} style={{ marginBottom: 28 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
-              <span style={{ fontWeight: 600, fontSize: '1.1rem', color: '#645a5a', letterSpacing: 0.5 }}>
-                {new Date(date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
-              </span>
-              <div style={{ flex: 1, height: 1, background: '#eee', marginLeft: 8 }} />
+    <div className="trip-details-container">
+      <nav className="trip-details-nav">
+        <button
+          className={sideTab === 'planning' ? 'active' : ''}
+          onClick={() => setSideTab('planning')}
+        >Planning</button>
+        <button
+          className={sideTab === 'hotels' ? 'active' : ''}
+          onClick={() => setSideTab('hotels')}
+        >Hôtels</button>
+      </nav>
+      <div className="trip-details-main">
+        {sideTab === 'planning' && (
+          <>
+            <div className="trip-details-header">
+              <h1 className="trip-details-title">{trip.destination}</h1>
+              <div className="trip-details-dates">
+                {new Date(trip.start_date).toLocaleDateString()} – {new Date(trip.end_date).toLocaleDateString()}
+              </div>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {groupedActivities[date].map((act) => (
-                <div key={act.id} style={{
-                  background: '#fff',
-                  borderRadius: 10,
-                  boxShadow: '0 1px 4px #0001',
-                  padding: '1rem 1.2rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: 12
-                }}>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 600, fontSize: '1.05rem', marginBottom: 2 }}>{act.title}</div>
-                    <div style={{ color: '#555', fontSize: '0.98rem', marginBottom: 2 }}>
-                      {act.location && <span>📍 {act.location} </span>}
-                      {act.time && (
-                        <span>
-                          · 🕒 {act.time.slice(0, 5)}
-                          {act.end_time && ` - ${act.end_time.slice(0, 5)}`}
-                        </span>
-                      )}
-                    </div>
-                    {act.description && (
-                      <div style={{ color: '#888', fontSize: '0.97rem', marginTop: 2, wordBreak: 'break-word', whiteSpace: 'pre-line', overflowWrap: 'anywhere' }}>
-                        {renderWithLinks(act.description)}
+            <div className="trip-details-activities">
+              {sortedDates.length === 0 && (
+                <div className="trip-details-empty">Aucune activité planifiée pour ce voyage.</div>
+              )}
+              {sortedDates.map((date) => (
+                <section className="trip-day-section" key={date}>
+                  <div className="trip-day-header">
+                    <span className="trip-day-date">
+                      {new Date(date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
+                    </span>
+                    <div className="trip-day-divider" />
+                  </div>
+                  <div className="trip-day-activities">
+                    {groupedActivities[date].map((act) => (
+                      <div className="trip-activity-card" key={act.id}>
+                        <div className="trip-activity-info">
+                          <div className="trip-activity-title">{act.title}</div>
+                          <div className="trip-activity-meta">
+                            {act.location && <span>📍 {act.location} </span>}
+                            {act.time && (
+                              <span>
+                                · 🕒 {act.time.slice(0, 5)}
+                                {act.end_time && ` - ${act.end_time.slice(0, 5)}`}
+                              </span>
+                            )}
+                          </div>
+                          {act.description && (
+                            <div className="trip-activity-desc">
+                              {renderWithLinks(act.description)}
+                            </div>
+                          )}
+                        </div>
+                        <div className="trip-activity-actions">
+                          <button
+                            title="Modifier"
+                            className="trip-activity-edit"
+                            onClick={() => {
+                              setSelectedActivity(act);
+                              setShowEditModal(true);
+                            }}
+                          >✏️</button>
+                          <button
+                            title="Supprimer"
+                            className="trip-activity-delete"
+                            onClick={() => handleDeleteActivity(act.id)}
+                          >🗑️</button>
+                        </div>
                       </div>
-                    )}
+                    ))}
                   </div>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    <button
-                      title="Modifier"
-                      onClick={() => {
-                        setSelectedActivity(act);
-                        setShowEditModal(true);
-                      }}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        color: '#645a5a',
-                        fontSize: 20,
-                        cursor: 'pointer',
-                        padding: 4,
-                        borderRadius: 6,
-                        transition: 'background 0.2s',
-                      }}
-                      onMouseOver={e => (e.currentTarget.style.background = '#f2f2f2')}
-                      onMouseOut={e => (e.currentTarget.style.background = 'none')}
-                    >
-                      ✏️
-                    </button>
-                    <button
-                      title="Supprimer"
-                      onClick={() => handleDeleteActivity(act.id)}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        color: '#b33',
-                        fontSize: 20,
-                        cursor: 'pointer',
-                        padding: 4,
-                        borderRadius: 6,
-                        transition: 'background 0.2s',
-                      }}
-                      onMouseOver={e => (e.currentTarget.style.background = '#fbeaea')}
-                      onMouseOut={e => (e.currentTarget.style.background = 'none')}
-                    >
-                      🗑️
-                    </button>
-                  </div>
-                </div>
+                </section>
               ))}
             </div>
-          </section>
-        ))}
+            <div className="trip-add-btn-wrapper">
+              <button className="trip-add-btn" onClick={() => setShowAddModal(true)}>
+                + Ajouter une activité
+              </button>
+            </div>
+          </>
+        )}
+        {sideTab === 'hotels' && (
+          <>
+            <HotelList
+              hotels={hotels}
+              onAdd={() => {
+                setEditHotel(null);
+                setShowHotelModal(true);
+              }}
+              onEdit={hotel => {
+                setEditHotel(hotel);
+                setShowHotelModal(true);
+              }}
+              onDelete={handleDeleteHotel}
+            />
+            <ModalHotelForm
+              open={showHotelModal}
+              onClose={() => { setShowHotelModal(false); setEditHotel(null); }}
+              onSubmit={async (hotelData) => {
+                if (editHotel) {
+                  await handleEditHotel({ ...editHotel, ...hotelData });
+                } else {
+                  await handleAddHotel(hotelData);
+                }
+                setShowHotelModal(false);
+                setEditHotel(null);
+              }}
+              initial={editHotel || undefined}
+              isEdit={!!editHotel}
+            />
+          </>
+        )}
+
+        {/* Modals */}
+        {showAddModal && trip && (
+          <ModalAddActivity
+            tripId={trip.id}
+            defaultDate={""}
+            onClose={() => setShowAddModal(false)}
+            onActivityAdded={handleActivityAdded}
+          />
+        )}
+        {showEditModal && selectedActivity && (
+          <ModalEditActivity
+            activity={selectedActivity}
+            onClose={() => {
+              setSelectedActivity(null);
+              setShowEditModal(false);
+            }}
+            onActivityUpdated={(updatedActivity) => {
+              setActivities((prev) =>
+                prev.map((a) => (a.id === updatedActivity.id ? updatedActivity : a))
+              );
+            }}
+          />
+        )}
       </div>
-
-      <div style={{ textAlign: 'center', marginTop: 32 }}>
-        <button className="trip-add-btn" onClick={() => setShowAddModal(true)}>
-          + Ajouter une activité
-        </button>
-      </div>
-
-      {/* 🔘 Modal d’ajout d’activité */}
-      {showAddModal && trip && (
-        <ModalAddActivity
-          tripId={trip.id}
-          defaultDate={""}
-          onClose={() => setShowAddModal(false)}
-          onActivityAdded={handleActivityAdded}
-        />
-      )}
-
-      {/* 🔘 Modal d’édition d’activité */}
-      {showEditModal && selectedActivity && (
-        <ModalEditActivity
-          activity={selectedActivity}
-          onClose={() => {
-            setSelectedActivity(null);
-            setShowEditModal(false);
-          }}
-          onActivityUpdated={(updatedActivity) => {
-            setActivities((prev) =>
-              prev.map((a) => (a.id === updatedActivity.id ? updatedActivity : a))
-            );
-          }}
-        />
-      )}
     </div>
   );
 }
