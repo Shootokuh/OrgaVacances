@@ -1,10 +1,11 @@
 import '../styles/Header.css';
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 
 
 export default function Header() {
   const location = useLocation();
+  const navigate = useNavigate();
   // Récupère l'id du voyage depuis l'URL pour toutes les pages commençant par /trip/:id
   const match = location.pathname.match(/^\/trip\/(\d+)/);
   const tripId = match ? match[1] : null;
@@ -13,10 +14,10 @@ export default function Header() {
   const showHeader = !!tripId;
   if (!showHeader) return null;
 
-  // Déconnexion : supprime le token et recharge la page
+  // Déconnexion : supprime le token et redirige vers l'accueil
   const handleLogout = () => {
     localStorage.removeItem('token');
-    window.location.reload();
+    navigate('/');
   };
 
   return (
