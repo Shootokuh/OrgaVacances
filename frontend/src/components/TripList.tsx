@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
+import { auth } from "../utils/firebase";
 import { Link } from "react-router-dom";
 import type { Trip } from "../types/trip";
-import type { User } from "../types/user";
 import ModalAddTrip from "./ModalAddTrip";
 import ModalConfirmDelete from "./ModalConfirmDelete";
 import { apiFetch } from "../utils/api";
@@ -9,8 +9,27 @@ import "../styles/TripList.css";
 
 
 export default function TripList() {
-  const [trips, setTrips] = useState<Trip[]>([]);
-  const [user, setUser] = useState<User | null>(null);
+  const [trips, setTrips] = useState<Trip[] | null>([]);
+  const [firebaseUser, setFirebaseUser] = useState<any | null>(auth.currentUser);
+  const [displayName, setDisplayName] = useState<string>("");
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      setFirebaseUser(user);
+    });
+    return () => unsubscribe();
+  }, []);
+  useEffect(() => {
+    if (firebaseUser) {
+      apiFetch("http://localhost:3001/api/users/me")
+        .then((res) => res.json())
+        .then((data) => {
+          if (data && data.name) setDisplayName(data.name);
+        })
+        .catch(() => setDisplayName(""));
+    } else {
+      setDisplayName("");
+    }
+  }, [firebaseUser]);
   const [showForm, setShowForm] = useState(false);
   const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
 
@@ -19,7 +38,7 @@ export default function TripList() {
   };
 
   const handleTripAdded = (newTrip: Trip) => {
-    setTrips((prev) => [...prev, newTrip]);
+    setTrips((prev) => (Array.isArray(prev) ? [...prev, newTrip] : [newTrip]));
   };
 
   const handleDeleteTrip = async (id: number) => {
@@ -31,7 +50,7 @@ export default function TripList() {
 
       if (!res.ok) throw new Error("Échec suppression");
 
-      setTrips((prev) => prev.filter((trip) => trip.id !== id));
+      setTrips((prev) => (Array.isArray(prev) ? prev.filter((trip) => trip.id !== id) : []));
     } catch (err) {
       console.error("Erreur suppression :", err);
     }
@@ -39,23 +58,25 @@ export default function TripList() {
 
 
   useEffect(() => {
-    apiFetch("http://localhost:3001/api/trips")
-      .then((res) => res.json())
-      .then((data) => setTrips(data))
-      .catch((err) => console.error("Erreur chargement voyages", err));
-  }, []);
+    if (firebaseUser) {
+      apiFetch("http://localhost:3001/api/trips")
+        .then((res) => res.json())
+        .then((data) => {
+          if (Array.isArray(data)) setTrips(data);
+          else setTrips([]);
+        })
+        .catch((err) => console.error("Erreur chargement voyages", err));
+    } else {
+      setTrips([]);
+    }
+  }, [firebaseUser]);
 
-  useEffect(() => {
-    apiFetch("http://localhost:3001/api/users/me")
-      .then((res) => res.json())
-      .then((data) => setUser(data))
-      .catch((err) => console.error("Erreur chargement utilisateur connecté", err));
-  }, []);
+  // L'utilisateur connecté est maintenant accessible via Firebase Auth côté frontend
 
   return (
     <div className="trip-container">
       <h1 className="trip-title">
-        Bienvenue {user ? user.name : "Pierre"} !
+        Bienvenue {displayName || (firebaseUser ? firebaseUser.email : "")} !
       </h1>
       <button
         style={{ position: 'absolute', top: 24, right: 32, background: '#2563eb', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 16px', fontWeight: 600, cursor: 'pointer', fontSize: '1rem', boxShadow: '0 2px 8px #0002' }}
@@ -67,7 +88,7 @@ export default function TripList() {
       <p className="trip-subtitle">Prépare tes futures aventures !</p>
 
       <div className="trip-grid">
-        {trips.map((trip) => (
+  {(Array.isArray(trips) ? trips : []).map((trip) => (
         <Link to={`/trip/${trip.id}`} key={trip.id} className="trip-card-link">
           <div className="trip-card">
             <button
@@ -103,7 +124,6 @@ export default function TripList() {
     {showForm && (
       <ModalAddTrip
         onClose={toggleForm}
-        user={user}
         onTripAdded={handleTripAdded}
       />
     )}

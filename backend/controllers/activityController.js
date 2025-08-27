@@ -3,7 +3,15 @@ const pool = require('../models/db');
 // Récupérer toutes les activités pour un voyage donné, triées par date
 exports.getActivitiesByTrip = async (req, res) => {
   const tripId = parseInt(req.params.tripId);
+  const email = req.user?.email;
+  if (!email) return res.status(401).json({ error: 'Utilisateur non authentifié' });
   try {
+    // Vérifie que le trip appartient à l'utilisateur
+    const userResult = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
+    if (userResult.rows.length === 0) return res.status(403).json({ error: 'Accès interdit' });
+    const userId = userResult.rows[0].id;
+    const tripResult = await pool.query('SELECT id FROM trips WHERE id = $1 AND user_id = $2', [tripId, userId]);
+    if (tripResult.rows.length === 0) return res.status(403).json({ error: 'Accès interdit à ce voyage' });
     const result = await pool.query(
       'SELECT * FROM activities WHERE trip_id = $1 ORDER BY date ASC',
       [tripId]
@@ -22,7 +30,15 @@ exports.addActivity = async (req, res) => {
     return res.status(400).json({ error: "Champs requis manquants" });
   }
 
+  const email = req.user?.email;
+  if (!email) return res.status(401).json({ error: 'Utilisateur non authentifié' });
   try {
+    // Vérifie que le trip appartient à l'utilisateur
+    const userResult = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
+    if (userResult.rows.length === 0) return res.status(403).json({ error: 'Accès interdit' });
+    const userId = userResult.rows[0].id;
+    const tripResult = await pool.query('SELECT id FROM trips WHERE id = $1 AND user_id = $2', [trip_id, userId]);
+    if (tripResult.rows.length === 0) return res.status(403).json({ error: 'Accès interdit à ce voyage' });
     const result = await pool.query(
       `INSERT INTO activities (trip_id, title, date, description, time, end_time, location)
       VALUES ($1, $2, $3, $4, $5, $6, $7)
@@ -38,7 +54,18 @@ exports.addActivity = async (req, res) => {
 
 exports.deleteActivity = async (req, res) => {
   const activityId = parseInt(req.params.id);
+  const email = req.user?.email;
+  if (!email) return res.status(401).json({ error: 'Utilisateur non authentifié' });
   try {
+    // Vérifie que l'activité appartient à un trip de l'utilisateur
+    const userResult = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
+    if (userResult.rows.length === 0) return res.status(403).json({ error: 'Accès interdit' });
+    const userId = userResult.rows[0].id;
+    const activityRows = await pool.query('SELECT * FROM activities WHERE id = $1', [activityId]);
+    const activity = activityRows.rows[0];
+    if (!activity) return res.status(404).json({ error: 'Activité non trouvée' });
+    const tripResult = await pool.query('SELECT id FROM trips WHERE id = $1 AND user_id = $2', [activity.trip_id, userId]);
+    if (tripResult.rows.length === 0) return res.status(403).json({ error: 'Accès interdit à ce voyage' });
     await pool.query("DELETE FROM activities WHERE id = $1", [activityId]);
     res.status(204).send(); // No Content
   } catch (err) {
@@ -55,7 +82,18 @@ exports.updateActivity = async (req, res) => {
     return res.status(400).json({ error: "Champs requis manquants" });
   }
 
+  const email = req.user?.email;
+  if (!email) return res.status(401).json({ error: 'Utilisateur non authentifié' });
   try {
+    // Vérifie que l'activité appartient à un trip de l'utilisateur
+    const userResult = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
+    if (userResult.rows.length === 0) return res.status(403).json({ error: 'Accès interdit' });
+    const userId = userResult.rows[0].id;
+    const activityRows = await pool.query('SELECT * FROM activities WHERE id = $1', [activityId]);
+    const activity = activityRows.rows[0];
+    if (!activity) return res.status(404).json({ error: 'Activité non trouvée' });
+    const tripResult = await pool.query('SELECT id FROM trips WHERE id = $1 AND user_id = $2', [activity.trip_id, userId]);
+    if (tripResult.rows.length === 0) return res.status(403).json({ error: 'Accès interdit à ce voyage' });
     const result = await pool.query(
       `UPDATE activities
        SET title = $1,
@@ -76,7 +114,6 @@ exports.updateActivity = async (req, res) => {
         activityId,
       ]
     );
-
     res.status(200).json(result.rows[0]);
   } catch (err) {
     console.error("Erreur modification activité :", err);

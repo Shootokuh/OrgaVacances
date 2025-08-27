@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { Activity } from "../types/activity";
 import "../styles/ModalAddTrip.css";
+import { apiFetch } from "../utils/api";
 
 type ModalAddActivityProps = {
   onClose: () => void;
@@ -37,16 +38,11 @@ export default function ModalAddActivity({ onClose, tripId, onActivityAdded, def
     };
 
     try {
-      const res = await fetch("http://localhost:3001/api/activities", {
+      const res = await apiFetch("http://localhost:3001/api/activities", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify(newActivity),
       });
-
       if (!res.ok) throw new Error("Erreur lors de l'ajout");
-
       const created = await res.json();
       onActivityAdded(created);
       onClose();

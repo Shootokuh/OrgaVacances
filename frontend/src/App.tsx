@@ -11,21 +11,50 @@ import CheckListWrapper from "./components/CheckListWrapper";
 import AuthPortal from "./components/AuthPortal";
 import ResetPassword from "./components/ResetPassword";
 import "./styles/AuthPortal.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { apiFetch } from "./utils/api";
+import { auth } from "./utils/firebase";
+
 
 
 
 
 function App() {
-  const [token, setToken] = useState<string | null>(null);
+  const [firebaseUser, setFirebaseUser] = useState<any | null>(auth.currentUser);
+  const [checkingToken, setCheckingToken] = useState(false);
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      setFirebaseUser(user);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // Vérifie le token côté backend dès qu'on a un utilisateur Firebase
+  useEffect(() => {
+    if (!firebaseUser) return;
+    setCheckingToken(true);
+    apiFetch("/api/users/me")
+      .then(res => {
+        setCheckingToken(false);
+        if (!res.ok) throw new Error('Unauthorized');
+      })
+      .catch(() => {
+        // Token invalide côté backend : on déconnecte tout
+        localStorage.removeItem('token');
+        auth.signOut();
+        setFirebaseUser(null);
+        setCheckingToken(false);
+      });
+  }, [firebaseUser]);
 
   return (
     <BrowserRouter>
       <Header />
       <Routes>
         <Route path="/reset-password" element={<ResetPassword />} />
-        {!token ? (
-          <Route path="/*" element={<AuthPortal setToken={setToken} />} />
+        {!firebaseUser || checkingToken ? (
+          <Route path="/*" element={<AuthPortal setToken={() => {}} />} />
         ) : (
           <>
             <Route path="/" element={<TripList />} />

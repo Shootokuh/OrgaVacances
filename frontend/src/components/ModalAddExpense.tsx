@@ -1,6 +1,8 @@
 
+
 import { useState, useEffect } from "react";
 import type { ModalAddExpenseProps } from "../types/expense";
+import { apiFetch } from "../utils/api";
 
 export default function ModalAddExpense({ tripId, participants, onClose, onExpenseAdded }: ModalAddExpenseProps) {
   const [form, setForm] = useState({
@@ -41,9 +43,8 @@ export default function ModalAddExpense({ tripId, participants, onClose, onExpen
     }
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:3001/api/expenses', {
+      const res = await apiFetch('http://localhost:3001/api/expenses', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           trip_id: tripId,
           amount: form.amount,

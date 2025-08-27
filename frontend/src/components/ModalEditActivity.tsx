@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { apiFetch } from "../utils/api";
 import type { Activity } from "../types/activity";
 import "../styles/ModalEditActivity.css";
 
@@ -39,16 +40,11 @@ export default function ModalEditActivity({
     };
 
     try {
-      const res = await fetch(`http://localhost:3001/api/activities/${activity.id}`, {
+      const res = await apiFetch(`http://localhost:3001/api/activities/${activity.id}`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify(updatedActivity),
       });
-
       if (!res.ok) throw new Error("Erreur lors de la mise à jour");
-
       const updated = await res.json();
       onActivityUpdated(updated);
       onClose();

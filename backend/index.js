@@ -10,6 +10,7 @@ const checklistRoutes = require('./routes/checklistRoutes');
 const participantRoutes = require('./routes/participantRoutes');
 
 const hotelRoutes = require('./routes/hotelRoutes');
+const authenticateToken = require('./middleware/auth');
 
 const app = express();
 app.use(cors());
@@ -17,7 +18,13 @@ app.use(express.json());
 
 app.get('/', (req, res) => res.send('✅ Backend opérationnel !'));
 
+// Routes publiques (inscription/login)
 app.use('/api/users', userRoutes);
+
+// Middleware d'authentification pour toutes les autres routes API
+app.use(authenticateToken);
+
+// Routes protégées
 app.use('/api/trips', tripRoutes);
 app.use('/api/activities', activityRoutes);
 app.use('/api/expenses', expenseRoutes);

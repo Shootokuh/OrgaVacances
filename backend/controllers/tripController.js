@@ -1,20 +1,16 @@
 const pool = require('../models/db');
 
 exports.getTrips = async (req, res) => {
-  // Récupère l'utilisateur via le token
-  const authHeader = req.headers['authorization'];
-  if (!authHeader) return res.status(401).json({ error: 'Token manquant' });
-  const token = authHeader.split(' ')[1];
-  if (!token) return res.status(401).json({ error: 'Token manquant' });
-  const jwt = require('jsonwebtoken');
-  let userId;
+  // Utilise l'utilisateur Firebase injecté par le middleware
+  const email = req.user?.email;
+  if (!email) return res.status(401).json({ error: 'Utilisateur non authentifié' });
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'devsecret');
-    userId = decoded.id;
-  } catch (err) {
-    return res.status(401).json({ error: 'Token invalide' });
-  }
-  try {
+    // Récupère l'id utilisateur interne à partir de l'email Firebase
+    const userResult = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Profil utilisateur non trouvé' });
+    }
+    const userId = userResult.rows[0].id;
     const result = await pool.query('SELECT * FROM trips WHERE user_id = $1 ORDER BY id ASC', [userId]);
     res.json(result.rows);
   } catch (err) {
@@ -24,24 +20,18 @@ exports.getTrips = async (req, res) => {
 };
 
 exports.addTrip = async (req, res) => {
-  // Récupère l'utilisateur via le token
-  const authHeader = req.headers['authorization'];
-  if (!authHeader) return res.status(401).json({ error: 'Token manquant' });
-  const token = authHeader.split(' ')[1];
-  if (!token) return res.status(401).json({ error: 'Token manquant' });
-  const jwt = require('jsonwebtoken');
-  let userId;
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'devsecret');
-    userId = decoded.id;
-  } catch (err) {
-    return res.status(401).json({ error: 'Token invalide' });
-  }
+  // Utilise l'utilisateur Firebase injecté par le middleware
+  const email = req.user?.email;
+  if (!email) return res.status(401).json({ error: 'Utilisateur non authentifié' });
   const { title, destination, start_date, end_date } = req.body;
   try {
-    // Récupérer le nom de l'utilisateur
-    const userResult = await pool.query('SELECT name FROM users WHERE id = $1', [userId]);
-    const userName = userResult.rows[0]?.name || 'Moi';
+    // Récupère l'id et le nom utilisateur interne à partir de l'email Firebase
+    const userResult = await pool.query('SELECT id, name FROM users WHERE email = $1', [email]);
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Profil utilisateur non trouvé' });
+    }
+    const userId = userResult.rows[0].id;
+    const userName = userResult.rows[0].name || 'Moi';
 
     // Créer le voyage
     const result = await pool.query(

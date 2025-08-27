@@ -10,5 +10,10 @@ export async function apiFetch(url: string, options: RequestInit = {}) {
     ...(token ? { 'Authorization': `Bearer ${token}` } : {})
   };
   const opts = { ...options, headers };
-  return fetch(url, opts);
+  const res = await fetch(url, opts);
+  if (res.status === 401) {
+    localStorage.removeItem('token');
+    throw new Error('Unauthorized');
+  }
+  return res;
 }

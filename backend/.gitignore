@@ -1,0 +1,13 @@
+# Ignore Firebase service account key and other secrets
+firebase-service-account.json
+.env
+.env.*
+# Node modules
+node_modules/
+# Logs
+logs/
+*.log
+npm-debug.log*
+# OS files
+.DS_Store
+Thumbs.db

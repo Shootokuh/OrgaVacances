@@ -15,6 +15,8 @@ RUN npm install
 
 # Copie du code source
 COPY . .
+# Copie la clé de service Firebase uniquement si présente (utile en local, ignorée en prod cloud)
+COPY firebase-service-account.json ./firebase-service-account.json
 
 # Donne les droits d’exécution au script d’attente
 RUN chmod +x wait-for-postgres.sh

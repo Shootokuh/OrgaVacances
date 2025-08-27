@@ -88,9 +88,8 @@ export default function BudgetPage() {
                       setBudgetError("");
                       setEditingBudget(false);
                       if (Number(budgetInput) !== trip.budget) {
-                        const res = await fetch(`http://localhost:3001/api/trips/${trip.id}`, {
+                        const res = await apiFetch(`http://localhost:3001/api/trips/${trip.id}`, {
                           method: "PUT",
-                          headers: { "Content-Type": "application/json" },
                           body: JSON.stringify({ budget: Number(budgetInput) })
                         });
                         if (res.ok) {

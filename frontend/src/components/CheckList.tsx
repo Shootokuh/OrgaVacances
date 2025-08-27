@@ -64,23 +64,6 @@ export default function CheckList({ destination, startDate, endDate }: { destina
     }
   };
 
-  // Supprimer une tâche
-  const handleDelete = async (id: number) => {
-    setLoading(true);
-    try {
-      const res = await apiFetch(`http://localhost:3001/api/checklist/${id}`, {
-        method: "DELETE"
-      });
-      if (!res.ok) throw new Error();
-      setTasks(tasks => tasks.filter(t => t.id !== id));
-      setError("");
-    } catch {
-      setError("Erreur lors de la suppression");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <div className="checklist-card">
       <div className="checklist-header">
@@ -111,16 +94,7 @@ export default function CheckList({ destination, startDate, endDate }: { destina
         )}
       </ul>
       {showInput ? (
-        <div
-          className="checklist-add-row"
-          tabIndex={-1}
-          onBlur={e => {
-            // Si le blur vient du input ou du bouton, on ferme le formulaire
-            // (sauf si on clique sur le bouton Ajouter)
-            setShowInput(false);
-            setNewTask("");
-          }}
-        >
+        <div className="checklist-add-row">
           <input
             type="text"
             value={newTask}
@@ -130,11 +104,6 @@ export default function CheckList({ destination, startDate, endDate }: { destina
             autoFocus
             onKeyDown={e => { if (e.key === "Enter") handleAddTask(); }}
             disabled={loading}
-            onBlur={e => {
-              // Si on clique ailleurs que sur le bouton, on ferme
-              setShowInput(false);
-              setNewTask("");
-            }}
           />
           <button
             className="checklist-add-btn"
@@ -142,6 +111,13 @@ export default function CheckList({ destination, startDate, endDate }: { destina
             disabled={loading}
             tabIndex={0}
           >Ajouter</button>
+          <button
+            className="checklist-add-btn"
+            onClick={() => { setShowInput(false); setNewTask(""); }}
+            disabled={loading}
+            tabIndex={0}
+            style={{ marginLeft: 8 }}
+          >Annuler</button>
         </div>
       ) : (
         <div style={{ textAlign: "center", marginTop: 24 }}>
