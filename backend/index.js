@@ -12,8 +12,12 @@ const participantRoutes = require('./routes/participantRoutes');
 const hotelRoutes = require('./routes/hotelRoutes');
 const authenticateToken = require('./middleware/auth');
 
+
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: 'https://orga-vacances.vercel.app',
+  credentials: true
+}));
 app.use(express.json());
 
 app.get('/', (req, res) => res.send('✅ Backend opérationnel !'));
