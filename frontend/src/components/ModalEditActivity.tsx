@@ -42,14 +42,9 @@ export default function ModalEditActivity({
     try {
   const res = await apiFetch(`/api/activities/${activity.id}`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify(updatedActivity),
       });
-
       if (!res.ok) throw new Error("Erreur lors de la mise à jour");
-
       const updated = await res.json();
       onActivityUpdated(updated);
       onClose();

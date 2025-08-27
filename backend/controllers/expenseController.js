@@ -3,7 +3,15 @@ const pool = require('../models/db');
 // ✅ Obtenir toutes les dépenses d’un voyage avec les bénéficiaires
 exports.getExpensesByTrip = async (req, res) => {
   const tripId = parseInt(req.params.tripId);
+  const email = req.user?.email;
+  if (!email) return res.status(401).json({ error: 'Utilisateur non authentifié' });
   try {
+    // Vérifie que le trip appartient à l'utilisateur
+    const userResult = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
+    if (userResult.rows.length === 0) return res.status(403).json({ error: 'Accès interdit' });
+    const userId = userResult.rows[0].id;
+    const tripResult = await pool.query('SELECT id FROM trips WHERE id = $1 AND user_id = $2', [tripId, userId]);
+    if (tripResult.rows.length === 0) return res.status(403).json({ error: 'Accès interdit à ce voyage' });
     // Récupérer toutes les dépenses du voyage
     const result = await pool.query(
       `SELECT * FROM expenses WHERE trip_id = $1 ORDER BY date DESC`,
@@ -48,6 +56,15 @@ exports.addExpense = async (req, res) => {
   if (!trip_id || !category || !amount || !date) {
     return res.status(400).json({ error: "Champs requis manquants" });
   }
+
+  const email = req.user?.email;
+  if (!email) return res.status(401).json({ error: 'Utilisateur non authentifié' });
+  // Vérifie que le trip appartient à l'utilisateur
+  const userResult = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
+  if (userResult.rows.length === 0) return res.status(403).json({ error: 'Accès interdit' });
+  const userId = userResult.rows[0].id;
+  const tripResult = await pool.query('SELECT id FROM trips WHERE id = $1 AND user_id = $2', [trip_id, userId]);
+  if (tripResult.rows.length === 0) return res.status(403).json({ error: 'Accès interdit à ce voyage' });
 
   const client = await pool.connect();
   try {

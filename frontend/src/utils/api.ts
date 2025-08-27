@@ -10,8 +10,10 @@ export async function apiFetch(url: string, options: RequestInit = {}) {
     ...(token ? { 'Authorization': `Bearer ${token}` } : {})
   };
   const opts = { ...options, headers };
-  // Préfixe l'URL par VITE_API_URL si ce n'est pas déjà un URL absolu
-  const baseUrl = import.meta.env.VITE_API_URL;
-  const fullUrl = url.startsWith('http') ? url : `${baseUrl}${url.startsWith('/') ? '' : '/'}${url}`;
-  return fetch(fullUrl, opts);
+  const res = await fetch(url, opts);
+  if (res.status === 401) {
+    localStorage.removeItem('token');
+    throw new Error('Unauthorized');
+  }
+  return res;
 }

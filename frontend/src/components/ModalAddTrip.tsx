@@ -5,11 +5,11 @@ import { apiFetch } from "../utils/api";
 
 type ModalAddTripProps = {
   onClose: () => void;
-  user: User | null;
   onTripAdded: (trip: any) => void;
+  user?: User | null;
 };
 
-export default function ModalAddTrip({ onClose, /* user, */ onTripAdded }: ModalAddTripProps) { // user non utilisé
+export default function ModalAddTrip({ onClose, onTripAdded }: ModalAddTripProps) {
   const [title, setTitle] = useState("");
   const [destination, setDestination] = useState("");
   const [startDate, setStartDate] = useState("");

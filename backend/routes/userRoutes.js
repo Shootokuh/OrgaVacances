@@ -1,13 +1,15 @@
+const authenticateToken = require('../middleware/auth');
 const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/userController');
 
-router.get('/', userController.getUsers);
-router.post('/', userController.addUser);
+// Routes publiques
 router.post('/register', userController.register);
 router.post('/login', userController.login);
-router.get('/me', userController.getMe);
-router.post('/forgot-password', userController.forgotPassword);
-router.post('/reset-password', userController.resetPassword);
+
+// Toutes les autres routes nécessitent un token
+router.get('/', authenticateToken, userController.getUsers);
+router.post('/', authenticateToken, userController.addUser);
+router.get('/me', authenticateToken, userController.getMe);
 
 module.exports = router;

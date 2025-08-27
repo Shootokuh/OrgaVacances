@@ -1,5 +1,7 @@
 import '../styles/Header.css';
+
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { auth } from "../utils/firebase";
 
 
 
@@ -15,9 +17,11 @@ export default function Header() {
   if (!showHeader) return null;
 
   // Déconnexion : supprime le token et redirige vers l'accueil
-  const handleLogout = () => {
+  const handleLogout = async () => {
     localStorage.removeItem('token');
-    navigate('/');
+    await auth.signOut();
+    navigate('/', { replace: true });
+    // L'état utilisateur sera réinitialisé dans App via onAuthStateChanged
   };
 
   return (

@@ -90,7 +90,6 @@ export default function BudgetPage() {
                       if (Number(budgetInput) !== trip.budget) {
                         const res = await apiFetch(`/api/trips/${trip.id}`, {
                           method: "PUT",
-                          headers: { "Content-Type": "application/json" },
                           body: JSON.stringify({ budget: Number(budgetInput) })
                         });
                         if (res.ok) {

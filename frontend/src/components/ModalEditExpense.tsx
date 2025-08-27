@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import "../styles/ModalEditExpense.css";
 import type { Expense } from "../types/expense";
@@ -51,7 +52,6 @@ export default function ModalEditExpense({ expense, participants, onClose, onExp
     try {
   const res = await apiFetch(`/api/expenses/${expense.id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           amount: form.amount,
           category: form.category,

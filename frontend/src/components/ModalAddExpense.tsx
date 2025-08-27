@@ -44,7 +44,6 @@ export default function ModalAddExpense({ tripId, participants, onClose, onExpen
     try {
   const res = await apiFetch('/api/expenses', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           trip_id: tripId,
           amount: form.amount,

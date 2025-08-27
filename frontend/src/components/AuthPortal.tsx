@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { apiFetch } from '../utils/api';
 import '../styles/AuthPortal.css';
-
-// const API_URL = '/api/users'; // Non utilisé
+import { GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
+import { auth } from "../utils/firebase";
 
 interface AuthPortalProps {
   setToken: (token: string) => void;
@@ -18,32 +17,15 @@ const AuthPortal: React.FC<AuthPortalProps> = ({ setToken }) => {
   const [error, setError] = useState('');
   const [forgotEmail, setForgotEmail] = useState('');
   const [forgotSuccess, setForgotSuccess] = useState('');
-  // Mot de passe oublié
-  const handleForgot = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setForgotSuccess('');
-    try {
-      const res = await apiFetch('/api/users/forgot-password', {
-        method: 'POST',
-        body: JSON.stringify({ email: forgotEmail })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Erreur lors de la demande');
-      setForgotSuccess('Un email de réinitialisation a été envoyé si le compte existe.');
-    } catch (err: any) {
-      setError(err.message);
-    }
-  };
 
-    // Helper pour récupérer le token
+  // Helper pour récupérer le token
   const getToken = () => localStorage.getItem('token');
 
   const validateEmail = (email: string) => {
-    // Simple regex pour vérifier le format email
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   };
 
+  // Connexion email/mot de passe via Firebase
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -52,20 +34,17 @@ const AuthPortal: React.FC<AuthPortalProps> = ({ setToken }) => {
       return;
     }
     try {
-      const res = await apiFetch('/api/users/login', {
-        method: 'POST',
-        body: JSON.stringify({ email: loginEmail, password: loginPassword })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Erreur de connexion');
-      localStorage.setItem('token', data.token); // Stocke le token
-      setToken(data.token);
-      window.location.href = '/'; // Redirige vers la page d'accueil (TripList)
+      const userCred = await signInWithEmailAndPassword(auth, loginEmail, loginPassword);
+      const token = await userCred.user.getIdToken();
+      localStorage.setItem('token', token);
+      setToken(token);
+      window.location.href = '/';
     } catch (err: any) {
       setError(err.message);
     }
   };
 
+  // Inscription email/mot de passe via Firebase
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -74,24 +53,61 @@ const AuthPortal: React.FC<AuthPortalProps> = ({ setToken }) => {
       return;
     }
     try {
-      const res = await apiFetch('/api/users/register', {
+      const userCred = await createUserWithEmailAndPassword(auth, registerEmail, registerPassword);
+      const token = await userCred.user.getIdToken();
+      localStorage.setItem('token', token);
+      setToken(token);
+      // Appel à l'API backend pour créer le profil utilisateur
+      await fetch('/api/users/register', {
         method: 'POST',
-        body: JSON.stringify({ email: registerEmail, name: registerName, password: registerPassword })
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ email: registerEmail, name: registerName })
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Erreur d\'inscription');
-      // Connexion automatique après inscription
-      const loginRes = await apiFetch('/api/users/login', {
+      window.location.href = '/';
+    } catch (err: any) {
+      setError(err.message);
+    }
+  };
+
+  // Connexion Google via Firebase
+  const handleGoogleLogin = async () => {
+    setError("");
+    try {
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      const token = await result.user.getIdToken();
+      localStorage.setItem("token", token);
+      setToken(token);
+      // Enregistre l'utilisateur dans la base si nouveau (ou met à jour le nom)
+      await fetch('/api/users/register', {
         method: 'POST',
-        body: JSON.stringify({ email: registerEmail, password: registerPassword })
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          email: result.user.email,
+          name: result.user.displayName,
+          google_id: result.user.providerData?.[0]?.uid || null
+        })
       });
-      const loginData = await loginRes.json();
-      if (!loginRes.ok) throw new Error(loginData.error || 'Erreur de connexion après inscription');
-      localStorage.setItem('token', loginData.token);
-      setToken(loginData.token);
-      window.location.href = '/'; // Redirige vers la page d'accueil (TripList)
-      setError('Inscription et connexion réussies !');
-      setTab('login'); // Optionnel
+      window.location.href = "/";
+    } catch (err: any) {
+      setError(err.message || "Erreur lors de la connexion Google");
+    }
+  };
+
+  // Mot de passe oublié via Firebase
+  const handleForgot = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setForgotSuccess('');
+    try {
+      await sendPasswordResetEmail(auth, forgotEmail);
+      setForgotSuccess('Un email de réinitialisation a été envoyé si le compte existe.');
     } catch (err: any) {
       setError(err.message);
     }
@@ -115,12 +131,15 @@ const AuthPortal: React.FC<AuthPortalProps> = ({ setToken }) => {
       </div>
       {tab === 'login' && (
         <form onSubmit={handleLogin}>
-          <input type="email" placeholder="E-mail" value={loginEmail} onChange={e => setLoginEmail(e.target.value)} required />
-          <input type="password" placeholder="Mot de passe" value={loginPassword} onChange={e => setLoginPassword(e.target.value)} required />
+          <input type="email" placeholder="E-mail" value={loginEmail} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLoginEmail(e.target.value)} required />
+          <input type="password" placeholder="Mot de passe" value={loginPassword} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLoginPassword(e.target.value)} required />
           <button type="submit" style={{ marginBottom: 8 }}>Continuer</button>
           <div style={{ textAlign: 'center', marginTop: 8 }}>
             <span style={{ cursor: 'pointer', color: '#1976d2' }} onClick={() => setTab('forgot')}>Mot de passe oublié ?</span>
           </div>
+          <button type="button" onClick={handleGoogleLogin} style={{ marginTop: 12, background: "#fff", color: "#222", border: "1px solid #ccc", borderRadius: 6, padding: "8px 16px", cursor: "pointer" }}>
+            Se connecter avec Google
+          </button>
         </form>
       )}
       {tab === 'register' && (
@@ -153,7 +172,6 @@ const AuthPortal: React.FC<AuthPortalProps> = ({ setToken }) => {
     </div>
   );
 };
-
 
 // Nouveau export avec wrapper centré
 const AuthPortalCentered: React.FC<AuthPortalProps> = (props) => (
