@@ -38,7 +38,7 @@ const AuthPortal: React.FC<AuthPortalProps> = ({ setToken }) => {
       const token = await userCred.user.getIdToken();
       localStorage.setItem('token', token);
       setToken(token);
-      window.location.href = '/';
+    // window.location.href = '/';
     } catch (err: any) {
       setError(err.message);
     }
@@ -66,7 +66,7 @@ const AuthPortal: React.FC<AuthPortalProps> = ({ setToken }) => {
         },
         body: JSON.stringify({ email: registerEmail, name: registerName })
       });
-      window.location.href = '/';
+    // window.location.href = '/';
     } catch (err: any) {
       setError(err.message);
     }
