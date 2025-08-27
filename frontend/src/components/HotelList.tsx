@@ -12,7 +12,7 @@ const HotelList: FC<HotelListProps> = ({ hotels, onAdd, onEdit, onDelete }) => {
     <div className="hotel-list-container">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
         <h2 className="hotel-list-title">Hôtels</h2>
-        <button className="hotel-list-add-btn" onClick={onAdd}>+ Ajouter</button>
+        <button className="hotel-list-add-btn" onClick={onAdd}>+ Ajouter un hôtel</button>
       </div>
       {hotels.length === 0 && <div style={{ color: '#888', fontStyle: 'italic' }}>Aucun hôtel renseigné.</div>}
 

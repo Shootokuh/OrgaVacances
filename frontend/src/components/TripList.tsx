@@ -20,7 +20,7 @@ export default function TripList() {
   }, []);
   useEffect(() => {
     if (firebaseUser) {
-      apiFetch("http://localhost:3001/api/users/me")
+  apiFetch('/api/users/me')
         .then((res) => res.json())
         .then((data) => {
           if (data && data.name) setDisplayName(data.name);
