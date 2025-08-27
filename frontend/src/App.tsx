@@ -34,7 +34,7 @@ function App() {
   useEffect(() => {
     if (!firebaseUser) return;
     setCheckingToken(true);
-    apiFetch("/api/users/me")
+  apiFetch('/api/users/me')
       .then(res => {
         setCheckingToken(false);
         if (!res.ok) throw new Error('Unauthorized');
