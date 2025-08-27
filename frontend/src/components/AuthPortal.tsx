@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import '../styles/AuthPortal.css';
 import { GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
+import { apiFetch } from "../utils/api";
 import { auth } from "../utils/firebase";
 
 interface AuthPortalProps {
@@ -58,7 +59,7 @@ const AuthPortal: React.FC<AuthPortalProps> = ({ setToken }) => {
       localStorage.setItem('token', token);
       setToken(token);
       // Appel à l'API backend pour créer le profil utilisateur
-      await fetch('/api/users/register', {
+      await apiFetch('/api/users/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -82,7 +83,7 @@ const AuthPortal: React.FC<AuthPortalProps> = ({ setToken }) => {
       localStorage.setItem("token", token);
       setToken(token);
       // Enregistre l'utilisateur dans la base si nouveau (ou met à jour le nom)
-      await fetch('/api/users/register', {
+      await apiFetch('/api/users/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
