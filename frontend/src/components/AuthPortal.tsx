@@ -94,7 +94,7 @@ const AuthPortal: React.FC<AuthPortalProps> = ({ setToken }) => {
           google_id: result.user.providerData?.[0]?.uid || null
         })
       });
-      window.location.href = "/";
+  // window.location.href = "/";
     } catch (err: any) {
       setError(err.message || "Erreur lors de la connexion Google");
     }
