@@ -10,15 +10,22 @@ const checklistRoutes = require('./routes/checklistRoutes');
 const participantRoutes = require('./routes/participantRoutes');
 
 const hotelRoutes = require('./routes/hotelRoutes');
+
+const pingRoutes = require('./routes/pingRoutes');
 const authenticateToken = require('./middleware/auth');
 
 
 const app = express();
 app.use(cors({
-  origin: 'https://orga-vacances.vercel.app',
+  origin: ['https://orga-vacances.vercel.app', 'http://localhost:5173'],
   credentials: true
 }));
+
+
 app.use(express.json());
+
+// Route publique de monitoring
+app.use('/', pingRoutes);
 
 app.get('/', (req, res) => res.send('✅ Backend opérationnel !'));
 
