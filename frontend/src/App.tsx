@@ -53,8 +53,10 @@ function App() {
       <Header />
       <Routes>
         <Route path="/reset-password" element={<ResetPassword />} />
-        {!firebaseUser || checkingToken ? (
+        {!firebaseUser ? (
           <Route path="/*" element={<AuthPortal setToken={() => {}} />} />
+        ) : checkingToken ? (
+          <Route path="/*" element={<div style={{textAlign:'center',marginTop:64,fontSize:'1.5rem'}}>Chargement...</div>} />
         ) : (
           <>
             <Route path="/" element={<TripList />} />

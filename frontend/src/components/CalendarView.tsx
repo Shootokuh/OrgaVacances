@@ -36,19 +36,29 @@ export default function CalendarView({ activities, hotels }: CalendarViewProps) 
   // Mappe les activités au format FullCalendar
   const activityEvents = activities.map(act => {
     const dateOnly = act.date.slice(0, 10);
+    // Formatage sûr des heures
+    const pad = (n: number) => n.toString().padStart(2, '0');
     let start = dateOnly;
     let end = undefined;
     if (act.time) {
-      start = `${dateOnly}T${act.time.length === 5 ? act.time + ':00' : act.time}`;
-    }
-    if (act.end_time) {
-      end = `${dateOnly}T${act.end_time.length === 5 ? act.end_time + ':00' : act.end_time}`;
+      // force HH:mm:ss
+      const t = act.time.length === 5 ? act.time + ':00' : act.time;
+      start = `${dateOnly}T${t}`;
+      if (act.end_time) {
+        const et = act.end_time.length === 5 ? act.end_time + ':00' : act.end_time;
+        end = `${dateOnly}T${et}`;
+      } else {
+        // Si pas d'heure de fin, ajoute 1h à l'heure de début
+      const dateObj = new Date(`${dateOnly}T${t}`);
+      dateObj.setHours(dateObj.getHours() + 1);
+      end = `${dateOnly}T${pad(dateObj.getHours())}:${pad(dateObj.getMinutes())}:${pad(dateObj.getSeconds())}`;
+      }
     }
     return {
       id: `activity-${act.id}`,
       title: act.title,
       start,
-      ...(end ? { end } : {}),
+      end,
       description: act.description,
       color: '#2563eb',
     };
@@ -86,12 +96,20 @@ export default function CalendarView({ activities, hotels }: CalendarViewProps) 
         events={events}
         height={"auto"}
         locale={frLocale}
-  slotMinTime={earliestStart}
-  slotMaxTime={latestEnd}
-        slotDuration="02:00:00"
-        slotLabelInterval="02:00"
+        slotMinTime={earliestStart}
+        slotMaxTime={latestEnd}
+        slotDuration="01:00:00"
+        slotLabelInterval="01:00"
         allDaySlot={true}
         expandRows={true}
+        slotLabelContent={(arg) => {
+          // Affiche seulement les heures impaires
+          const hour = arg.date.getHours();
+          if (hour % 2 === 1) {
+            return arg.text;
+          }
+          return '';
+        }}
       />
     </div>
   );
