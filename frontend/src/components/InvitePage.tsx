@@ -26,10 +26,20 @@ export default function InvitePage() {
     signInWithEmailLink(auth, email, url)
       .then(async () => {
         window.localStorage.removeItem("emailForSignIn");
+        // Récupère le token Firebase après connexion
+        const user = auth.currentUser;
+        if (!user) {
+          setStatus("Erreur : utilisateur non connecté après le lien magique.");
+          return;
+        }
+        const token = await user.getIdToken();
         // Appelle le backend pour ajouter l'utilisateur au voyage
         const res = await apiFetch(`/api/trips/${tripId}/share/accept`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
           body: JSON.stringify({ email }),
         });
         if (res.ok) {
