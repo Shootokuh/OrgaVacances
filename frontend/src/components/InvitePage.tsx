@@ -33,6 +33,8 @@ export default function InvitePage() {
           return;
         }
         const token = await user.getIdToken();
+        // Stocke le token pour la session principale
+        window.localStorage.setItem('token', token);
         // Appelle le backend pour ajouter l'utilisateur au voyage
         const res = await apiFetch(`/api/trips/${tripId}/share/accept`, {
           method: "POST",
@@ -44,7 +46,10 @@ export default function InvitePage() {
         });
         if (res.ok) {
           setStatus("Vous avez bien rejoint le voyage ! Redirection...");
-          setTimeout(() => navigate(`/trip/${tripId}`), 2000);
+          setTimeout(() => {
+            navigate(`/trip/${tripId}`);
+            window.location.reload();
+          }, 2000);
         } else {
           const data = await res.json();
           setStatus(data.error || "Erreur lors de l'ajout au voyage.");

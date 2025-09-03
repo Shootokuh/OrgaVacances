@@ -1,3 +1,35 @@
+// Récupère un trip par son id, seulement si l'utilisateur y a accès (owner ou viewer)
+exports.getTripById = async (req, res) => {
+  const tripId = parseInt(req.params.id);
+  if (isNaN(tripId)) {
+    return res.status(400).json({ error: 'ID invalide' });
+  }
+  const email = req.user?.email;
+  if (!email) return res.status(401).json({ error: 'Utilisateur non authentifié' });
+  try {
+    // Récupère l'id utilisateur interne à partir de l'email Firebase
+    const userResult = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Profil utilisateur non trouvé' });
+    }
+    const userId = userResult.rows[0].id;
+    // Vérifie l'accès à ce trip
+    const tripUserModel = require('../models/tripUser');
+    const hasAccess = await tripUserModel.userHasAccessToTrip(tripId, userId);
+    if (!hasAccess) {
+      return res.status(403).json({ error: 'Accès refusé à ce voyage' });
+    }
+    // Récupère le trip
+    const result = await pool.query('SELECT * FROM trips WHERE id = $1', [tripId]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Voyage non trouvé' });
+    }
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Erreur getTripById:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+};
 const pool = require('../models/db');
 
 exports.getTrips = async (req, res) => {
@@ -11,8 +43,18 @@ exports.getTrips = async (req, res) => {
       return res.status(404).json({ error: 'Profil utilisateur non trouvé' });
     }
     const userId = userResult.rows[0].id;
-    const result = await pool.query('SELECT * FROM trips WHERE user_id = $1 ORDER BY id ASC', [userId]);
-    res.json(result.rows);
+    // Récupère tous les trips accessibles par l'utilisateur (owner ou viewer)
+    const tripUserModel = require('../models/tripUser');
+    const accessibleTripIds = await tripUserModel.getTripsForUser(userId);
+    let trips = [];
+    if (accessibleTripIds.length > 0) {
+      const result = await pool.query(
+        `SELECT * FROM trips WHERE id = ANY($1::int[]) ORDER BY id ASC`,
+        [accessibleTripIds]
+      );
+      trips = result.rows;
+    }
+    res.json(trips);
   } catch (err) {
     console.error('Erreur getTrips:', err);
     res.status(500).json({ error: 'Erreur serveur' });
