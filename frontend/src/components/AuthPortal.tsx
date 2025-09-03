@@ -39,9 +39,22 @@ const AuthPortal: React.FC<AuthPortalProps> = ({ setToken }) => {
       const token = await userCred.user.getIdToken();
       localStorage.setItem('token', token);
       setToken(token);
-    // window.location.href = '/';
+      // window.location.href = '/';
     } catch (err: any) {
-      setError(err.message);
+      // Gestion des erreurs Firebase pour affichage utilisateur
+      let msg = '';
+      if (err.code === 'auth/user-not-found') {
+        msg = "Aucun compte trouvé pour cet email.";
+      } else if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+        msg = "Mot de passe incorrect.";
+      } else if (err.code === 'auth/too-many-requests') {
+        msg = "Trop de tentatives. Veuillez réessayer plus tard.";
+      } else if (err.code === 'auth/invalid-email') {
+        msg = "Email invalide.";
+      } else {
+        msg = err.message || "Erreur lors de la connexion.";
+      }
+      setError(msg);
     }
   };
 
@@ -67,9 +80,19 @@ const AuthPortal: React.FC<AuthPortalProps> = ({ setToken }) => {
         },
         body: JSON.stringify({ email: registerEmail, name: registerName })
       });
-    // window.location.href = '/';
+      // window.location.href = '/';
     } catch (err: any) {
-      setError(err.message);
+      let msg = '';
+      if (err.code === 'auth/weak-password') {
+        msg = "Le mot de passe doit contenir au moins 6 caractères.";
+      } else if (err.code === 'auth/email-already-in-use') {
+        msg = "Cet email est déjà utilisé.";
+      } else if (err.code === 'auth/invalid-email') {
+        msg = "Email invalide.";
+      } else {
+        msg = err.message || "Erreur lors de l'inscription.";
+      }
+      setError(msg);
     }
   };
 

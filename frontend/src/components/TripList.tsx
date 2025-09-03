@@ -4,7 +4,9 @@ import { Link } from "react-router-dom";
 import type { Trip } from "../types/trip";
 import ModalAddTrip from "./ModalAddTrip";
 import ModalConfirmDelete from "./ModalConfirmDelete";
+import ModalShareTrip from "./ModalShareTrip";
 import { apiFetch } from "../utils/api";
+import shareIcon from "../assets/share.svg";
 import "../styles/TripList.css";
 
 
@@ -12,6 +14,7 @@ export default function TripList() {
   const [trips, setTrips] = useState<Trip[] | null>([]);
   const [firebaseUser, setFirebaseUser] = useState<any | null>(auth.currentUser);
   const [displayName, setDisplayName] = useState<string>("");
+  const [shareTripId, setShareTripId] = useState<number | null>(null);
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       setFirebaseUser(user);
@@ -88,30 +91,44 @@ export default function TripList() {
       <p className="trip-subtitle">Prépare tes futures aventures !</p>
 
       <div className="trip-grid">
-  {(Array.isArray(trips) ? trips : []).map((trip) => (
-        <Link to={`/trip/${trip.id}`} key={trip.id} className="trip-card-link">
-          <div className="trip-card">
-            <button
-              className="delete-btn"
-              onClick={(e) => {
-                e.preventDefault(); // ⛔ empêche la redirection si on clique sur la poubelle
-                setSelectedTrip(trip);
-              }}
-              title="Supprimer le voyage"
-            >
-              🗑️
-            </button>
-
-            <span className="trip-emoji">🌍</span>
-            <h3 className="trip-name">{trip.title}</h3>
-            <p className="trip-destination">{trip.destination}</p>
-            <p className="trip-dates">
-              Du {new Date(trip.start_date).toLocaleDateString()} au{" "}
-              {new Date(trip.end_date).toLocaleDateString()}
-            </p>
-          </div>
-        </Link>
-
+        {(Array.isArray(trips) ? trips : []).map((trip) => (
+          <Link to={`/trip/${trip.id}`} key={trip.id} className="trip-card-link">
+            <div className="trip-card">
+              <div style={{ position: 'absolute', top: 16, right: 16, display: 'flex', flexDirection: 'row', gap: 8, zIndex: 2 }}>
+                <button
+                  className="share-btn"
+                  onClick={e => {
+                    e.preventDefault();
+                    setShareTripId(trip.id);
+                  }}
+                  title="Partager le voyage"
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}
+                  aria-label="Partager le voyage"
+                >
+                  <img src={shareIcon} alt="Partager" style={{ width: 30, height: 30 }} />
+                </button>
+                <button
+                  className="delete-btn"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setSelectedTrip(trip);
+                  }}
+                  title="Supprimer le voyage"
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}
+                  aria-label="Supprimer le voyage"
+                >
+                  🗑️
+                </button>
+              </div>
+              <span className="trip-emoji">🌍</span>
+              <h3 className="trip-name">{trip.title}</h3>
+              <p className="trip-destination">{trip.destination}</p>
+              <p className="trip-dates">
+                Du {new Date(trip.start_date).toLocaleDateString()} au{" "}
+                {new Date(trip.end_date).toLocaleDateString()}
+              </p>
+            </div>
+          </Link>
         ))}
 
         {/* Carte "Nouveau voyage" */}
@@ -139,6 +156,12 @@ export default function TripList() {
       />
     )}
 
+    {shareTripId && (
+      <ModalShareTrip
+        tripId={shareTripId}
+        onClose={() => setShareTripId(null)}
+      />
+    )}
     </div>
   );
 }

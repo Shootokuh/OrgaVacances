@@ -1,4 +1,13 @@
+
 const pool = require('../models/db');
+const tripUserModel = require('../models/tripUser');
+
+// Helper pour récupérer l'userId à partir de l'email du token
+async function getUserIdFromEmail(email) {
+  const userResult = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
+  if (userResult.rows.length === 0) return null;
+  return userResult.rows[0].id;
+}
 
 // ✅ Obtenir toutes les dépenses d’un voyage avec les bénéficiaires
 exports.getExpensesByTrip = async (req, res) => {
@@ -6,12 +15,10 @@ exports.getExpensesByTrip = async (req, res) => {
   const email = req.user?.email;
   if (!email) return res.status(401).json({ error: 'Utilisateur non authentifié' });
   try {
-    // Vérifie que le trip appartient à l'utilisateur
-    const userResult = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
-    if (userResult.rows.length === 0) return res.status(403).json({ error: 'Accès interdit' });
-    const userId = userResult.rows[0].id;
-    const tripResult = await pool.query('SELECT id FROM trips WHERE id = $1 AND user_id = $2', [tripId, userId]);
-    if (tripResult.rows.length === 0) return res.status(403).json({ error: 'Accès interdit à ce voyage' });
+    const userId = await getUserIdFromEmail(email);
+    if (!userId) return res.status(403).json({ error: 'Accès interdit' });
+    const hasAccess = await tripUserModel.userHasAccessToTrip(tripId, userId);
+    if (!hasAccess) return res.status(403).json({ error: 'Accès interdit à ce voyage' });
     // Récupérer toutes les dépenses du voyage
     const result = await pool.query(
       `SELECT * FROM expenses WHERE trip_id = $1 ORDER BY date DESC`,
@@ -59,12 +66,10 @@ exports.addExpense = async (req, res) => {
 
   const email = req.user?.email;
   if (!email) return res.status(401).json({ error: 'Utilisateur non authentifié' });
-  // Vérifie que le trip appartient à l'utilisateur
-  const userResult = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
-  if (userResult.rows.length === 0) return res.status(403).json({ error: 'Accès interdit' });
-  const userId = userResult.rows[0].id;
-  const tripResult = await pool.query('SELECT id FROM trips WHERE id = $1 AND user_id = $2', [trip_id, userId]);
-  if (tripResult.rows.length === 0) return res.status(403).json({ error: 'Accès interdit à ce voyage' });
+  const userId = await getUserIdFromEmail(email);
+  if (!userId) return res.status(403).json({ error: 'Accès interdit' });
+  const hasAccess = await tripUserModel.userHasAccessToTrip(trip_id, userId);
+  if (!hasAccess) return res.status(403).json({ error: 'Accès interdit à ce voyage' });
 
   const client = await pool.connect();
   try {
@@ -106,6 +111,17 @@ exports.updateExpense = async (req, res) => {
   const expenseId = parseInt(req.params.id);
   const { category, amount, description, date, paid_by, participant_ids } = req.body;
 
+  const email = req.user?.email;
+  if (!email) return res.status(401).json({ error: 'Utilisateur non authentifié' });
+  const userId = await getUserIdFromEmail(email);
+  if (!userId) return res.status(403).json({ error: 'Accès interdit' });
+  // Vérifie que l'utilisateur a accès à la dépense (via le trip)
+  const expenseRows = await pool.query('SELECT * FROM expenses WHERE id = $1', [expenseId]);
+  const expense = expenseRows.rows[0];
+  if (!expense) return res.status(404).json({ error: 'Dépense non trouvée' });
+  const hasAccess = await tripUserModel.userHasAccessToTrip(expense.trip_id, userId);
+  if (!hasAccess) return res.status(403).json({ error: 'Accès interdit à ce voyage' });
+
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
@@ -127,12 +143,12 @@ exports.updateExpense = async (req, res) => {
     await client.query('COMMIT');
 
     // Retourner la dépense avec les participants
-    const expense = result.rows[0];
+    const updatedExpense = result.rows[0];
     const partResult = await pool.query(
       `SELECT p.id, p.name FROM expense_participants ep JOIN participants p ON ep.participant_id = p.id WHERE ep.expense_id = $1`,
       [expenseId]
     );
-    res.json({ ...expense, participants: partResult.rows });
+    res.json({ ...updatedExpense, participants: partResult.rows });
   } catch (err) {
     await client.query('ROLLBACK');
     console.error("Erreur update dépense :", err);
@@ -145,6 +161,16 @@ exports.updateExpense = async (req, res) => {
 // ✅ Supprimer une dépense (les bénéficiaires sont supprimés en cascade)
 exports.deleteExpense = async (req, res) => {
   const expenseId = parseInt(req.params.id);
+  const email = req.user?.email;
+  if (!email) return res.status(401).json({ error: 'Utilisateur non authentifié' });
+  const userId = await getUserIdFromEmail(email);
+  if (!userId) return res.status(403).json({ error: 'Accès interdit' });
+  // Vérifie que l'utilisateur a accès à la dépense (via le trip)
+  const expenseRows = await pool.query('SELECT * FROM expenses WHERE id = $1', [expenseId]);
+  const expense = expenseRows.rows[0];
+  if (!expense) return res.status(404).json({ error: 'Dépense non trouvée' });
+  const hasAccess = await tripUserModel.userHasAccessToTrip(expense.trip_id, userId);
+  if (!hasAccess) return res.status(403).json({ error: 'Accès interdit à ce voyage' });
   try {
     await pool.query(`DELETE FROM expenses WHERE id = $1`, [expenseId]);
     res.status(204).send(); // No Content

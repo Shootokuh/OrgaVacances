@@ -1,4 +1,13 @@
+
 const pool = require('../models/db');
+const tripUserModel = require('../models/tripUser');
+
+// Helper pour récupérer l'userId à partir de l'email du token
+async function getUserIdFromEmail(email) {
+  const userResult = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
+  if (userResult.rows.length === 0) return null;
+  return userResult.rows[0].id;
+}
 
 // Récupérer tous les items de la checklist d'un voyage
 exports.getChecklist = async (req, res) => {
@@ -7,12 +16,10 @@ exports.getChecklist = async (req, res) => {
   const email = req.user?.email;
   if (!email) return res.status(401).json({ error: 'Utilisateur non authentifié' });
   try {
-    // Vérifie que le trip appartient à l'utilisateur
-    const userResult = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
-    if (userResult.rows.length === 0) return res.status(403).json({ error: 'Accès interdit' });
-    const userId = userResult.rows[0].id;
-    const tripResult = await pool.query('SELECT id FROM trips WHERE id = $1 AND user_id = $2', [tripId, userId]);
-    if (tripResult.rows.length === 0) return res.status(403).json({ error: 'Accès interdit à ce voyage' });
+    const userId = await getUserIdFromEmail(email);
+    if (!userId) return res.status(403).json({ error: 'Accès interdit' });
+    const hasAccess = await tripUserModel.userHasAccessToTrip(tripId, userId);
+    if (!hasAccess) return res.status(403).json({ error: 'Accès interdit à ce voyage' });
     const result = await pool.query('SELECT * FROM checklistitems WHERE trip_id = $1 ORDER BY id ASC', [tripId]);
     res.json(result.rows);
   } catch (err) {
@@ -29,12 +36,10 @@ exports.addChecklistItem = async (req, res) => {
   const email = req.user?.email;
   if (!email) return res.status(401).json({ error: 'Utilisateur non authentifié' });
   try {
-    // Vérifie que le trip appartient à l'utilisateur
-    const userResult = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
-    if (userResult.rows.length === 0) return res.status(403).json({ error: 'Accès interdit' });
-    const userId = userResult.rows[0].id;
-    const tripResult = await pool.query('SELECT id FROM trips WHERE id = $1 AND user_id = $2', [tripId, userId]);
-    if (tripResult.rows.length === 0) return res.status(403).json({ error: 'Accès interdit à ce voyage' });
+    const userId = await getUserIdFromEmail(email);
+    if (!userId) return res.status(403).json({ error: 'Accès interdit' });
+    const hasAccess = await tripUserModel.userHasAccessToTrip(tripId, userId);
+    if (!hasAccess) return res.status(403).json({ error: 'Accès interdit à ce voyage' });
     const result = await pool.query(
       'INSERT INTO checklistitems (trip_id, title) VALUES ($1, $2) RETURNING *',
       [tripId, title]
@@ -54,15 +59,13 @@ exports.updateChecklistItem = async (req, res) => {
   const email = req.user?.email;
   if (!email) return res.status(401).json({ error: 'Utilisateur non authentifié' });
   try {
-    // Vérifie que l'item appartient à un trip de l'utilisateur
-    const userResult = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
-    if (userResult.rows.length === 0) return res.status(403).json({ error: 'Accès interdit' });
-    const userId = userResult.rows[0].id;
+    const userId = await getUserIdFromEmail(email);
+    if (!userId) return res.status(403).json({ error: 'Accès interdit' });
     const itemRows = await pool.query('SELECT * FROM checklistitems WHERE id = $1', [itemId]);
     const item = itemRows.rows[0];
     if (!item) return res.status(404).json({ error: 'Item non trouvé' });
-    const tripResult = await pool.query('SELECT id FROM trips WHERE id = $1 AND user_id = $2', [item.trip_id, userId]);
-    if (tripResult.rows.length === 0) return res.status(403).json({ error: 'Accès interdit à ce voyage' });
+    const hasAccess = await tripUserModel.userHasAccessToTrip(item.trip_id, userId);
+    if (!hasAccess) return res.status(403).json({ error: 'Accès interdit à ce voyage' });
     const result = await pool.query(
       'UPDATE checklistitems SET is_checked = $1 WHERE id = $2 RETURNING *',
       [is_checked, itemId]
@@ -81,15 +84,13 @@ exports.deleteChecklistItem = async (req, res) => {
   const email = req.user?.email;
   if (!email) return res.status(401).json({ error: 'Utilisateur non authentifié' });
   try {
-    // Vérifie que l'item appartient à un trip de l'utilisateur
-    const userResult = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
-    if (userResult.rows.length === 0) return res.status(403).json({ error: 'Accès interdit' });
-    const userId = userResult.rows[0].id;
+    const userId = await getUserIdFromEmail(email);
+    if (!userId) return res.status(403).json({ error: 'Accès interdit' });
     const itemRows = await pool.query('SELECT * FROM checklistitems WHERE id = $1', [itemId]);
     const item = itemRows.rows[0];
     if (!item) return res.status(404).json({ error: 'Item non trouvé' });
-    const tripResult = await pool.query('SELECT id FROM trips WHERE id = $1 AND user_id = $2', [item.trip_id, userId]);
-    if (tripResult.rows.length === 0) return res.status(403).json({ error: 'Accès interdit à ce voyage' });
+    const hasAccess = await tripUserModel.userHasAccessToTrip(item.trip_id, userId);
+    if (!hasAccess) return res.status(403).json({ error: 'Accès interdit à ce voyage' });
     const result = await pool.query('DELETE FROM checklistitems WHERE id = $1 RETURNING *', [itemId]);
     res.json({ message: 'Item supprimé', deletedItem: result.rows[0] });
   } catch (err) {

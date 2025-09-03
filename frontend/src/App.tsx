@@ -10,6 +10,7 @@ import CalendarPage from "./components/CalendarPage";
 import CheckListWrapper from "./components/CheckListWrapper";
 import AuthPortal from "./components/AuthPortal";
 import ResetPassword from "./components/ResetPassword";
+import InvitePage from "./components/InvitePage";
 import "./styles/AuthPortal.css";
 import { useEffect, useState } from "react";
 import { apiFetch } from "./utils/api";
@@ -53,6 +54,7 @@ function App() {
       <Header />
       <Routes>
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/invite" element={<InvitePage />} />
         {!firebaseUser ? (
           <Route path="/*" element={<AuthPortal setToken={() => {}} />} />
         ) : checkingToken ? (

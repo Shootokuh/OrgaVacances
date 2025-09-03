@@ -43,6 +43,10 @@ exports.addTrip = async (req, res) => {
     // Ajouter le créateur comme participant
     await pool.query('INSERT INTO participants (trip_id, name) VALUES ($1, $2)', [trip.id, userName]);
 
+    // Ajouter le créateur dans trip_users comme owner
+    const tripUserModel = require('../models/tripUser');
+    await tripUserModel.addUserToTrip(trip.id, userId, 'owner');
+
     res.status(201).json(trip);
   } catch (err) {
     console.error('Erreur addTrip:', err);

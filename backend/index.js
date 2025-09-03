@@ -8,6 +8,7 @@ const activityRoutes = require('./routes/activityRoutes');
 const expenseRoutes = require('./routes/expenseRoutes');
 const checklistRoutes = require('./routes/checklistRoutes');
 const participantRoutes = require('./routes/participantRoutes');
+const tripShareRoutes = require('./routes/tripShareRoutes');
 
 const hotelRoutes = require('./routes/hotelRoutes');
 
@@ -37,6 +38,7 @@ app.use(authenticateToken);
 
 // Routes protégées
 app.use('/api/trips', tripRoutes);
+app.use('/api/trips', tripShareRoutes);
 app.use('/api/activities', activityRoutes);
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/checklist', checklistRoutes);
