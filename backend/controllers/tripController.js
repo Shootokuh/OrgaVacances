@@ -48,11 +48,20 @@ exports.getTrips = async (req, res) => {
     const accessibleTripIds = await tripUserModel.getTripsForUser(userId);
     let trips = [];
     if (accessibleTripIds.length > 0) {
+      // Récupère tous les trips accessibles
       const result = await pool.query(
         `SELECT * FROM trips WHERE id = ANY($1::int[]) ORDER BY id ASC`,
         [accessibleTripIds]
       );
-      trips = result.rows;
+      const tripUserRes = await pool.query(
+        `SELECT trip_id, role FROM trip_users WHERE user_id = $1 AND trip_id = ANY($2::int[])`,
+        [userId, accessibleTripIds]
+      );
+      const tripRoles = {};
+      for (const row of tripUserRes.rows) {
+        tripRoles[row.trip_id] = row.role;
+      }
+      trips = result.rows.map(trip => ({ ...trip, role: tripRoles[trip.id] || 'viewer' }));
     }
     res.json(trips);
   } catch (err) {

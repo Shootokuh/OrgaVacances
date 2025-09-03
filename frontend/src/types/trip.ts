@@ -5,4 +5,5 @@ export type Trip = {
   start_date: string;
   end_date: string;
   budget: number;
+  role: 'owner' | 'viewer';
 };

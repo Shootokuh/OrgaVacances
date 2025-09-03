@@ -95,18 +95,21 @@ export default function TripList() {
           <Link to={`/trip/${trip.id}`} key={trip.id} className="trip-card-link">
             <div className="trip-card">
               <div style={{ position: 'absolute', top: 16, right: 16, display: 'flex', flexDirection: 'row', gap: 8, zIndex: 2 }}>
-                <button
-                  className="share-btn"
-                  onClick={e => {
-                    e.preventDefault();
-                    setShareTripId(trip.id);
-                  }}
-                  title="Partager le voyage"
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}
-                  aria-label="Partager le voyage"
-                >
-                  <img src={shareIcon} alt="Partager" style={{ width: 30, height: 30 }} />
-                </button>
+                {/* Bouton partage visible uniquement pour owner */}
+                {trip.role === 'owner' && (
+                  <button
+                    className="share-btn"
+                    onClick={e => {
+                      e.preventDefault();
+                      setShareTripId(trip.id);
+                    }}
+                    title="Partager le voyage"
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}
+                    aria-label="Partager le voyage"
+                  >
+                    <img src={shareIcon} alt="Partager" style={{ width: 30, height: 30 }} />
+                  </button>
+                )}
                 <button
                   className="delete-btn"
                   onClick={(e) => {
