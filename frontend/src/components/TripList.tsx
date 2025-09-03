@@ -110,18 +110,21 @@ export default function TripList() {
                     <img src={shareIcon} alt="Partager" style={{ width: 30, height: 30 }} />
                   </button>
                 )}
-                <button
-                  className="delete-btn"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setSelectedTrip(trip);
-                  }}
-                  title="Supprimer le voyage"
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}
-                  aria-label="Supprimer le voyage"
-                >
-                  🗑️
-                </button>
+                {/* Bouton supprimer visible uniquement pour owner */}
+                {trip.role === 'owner' && (
+                  <button
+                    className="delete-btn"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setSelectedTrip(trip);
+                    }}
+                    title="Supprimer le voyage"
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}
+                    aria-label="Supprimer le voyage"
+                  >
+                    🗑️
+                  </button>
+                )}
               </div>
               <span className="trip-emoji">🌍</span>
               <h3 className="trip-name">{trip.title}</h3>

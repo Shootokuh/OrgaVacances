@@ -113,12 +113,24 @@ exports.deleteTrip = async (req, res) => {
   }
 
   try {
+    const email = req.user?.email;
+    if (!email) return res.status(401).json({ error: 'Utilisateur non authentifié' });
+    // Récupère l'id utilisateur interne à partir de l'email Firebase
+    const userResult = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Profil utilisateur non trouvé' });
+    }
+    const userId = userResult.rows[0].id;
+    // Vérifie que l'utilisateur est owner du trip
+    const tripUserModel = require('../models/tripUser');
+    const roleRes = await pool.query('SELECT role FROM trip_users WHERE trip_id = $1 AND user_id = $2', [tripId, userId]);
+    if (roleRes.rows.length === 0 || roleRes.rows[0].role !== 'owner') {
+      return res.status(403).json({ error: 'Seul le propriétaire peut supprimer ce voyage' });
+    }
     const result = await pool.query('DELETE FROM trips WHERE id = $1 RETURNING *', [tripId]);
-
     if (result.rowCount === 0) {
       return res.status(404).json({ error: 'Voyage non trouvé' });
     }
-
     res.json({ message: 'Voyage supprimé avec succès', deletedTrip: result.rows[0] });
   } catch (err) {
     console.error('Erreur deleteTrip:', err);
