@@ -16,9 +16,10 @@ import type { Hotel } from '../types/hotel';
 type CalendarViewProps = {
   activities: Activity[];
   hotels?: Hotel[];
+  defaultDate?: string;
 };
 
-export default function CalendarView({ activities, hotels }: CalendarViewProps) {
+export default function CalendarView({ activities, hotels, defaultDate }: CalendarViewProps) {
   // Gère la vue initiale selon la largeur d'écran
   const [initialView, setInitialView] = useState('dayGridMonth');
   useEffect(() => {
@@ -88,6 +89,7 @@ export default function CalendarView({ activities, hotels }: CalendarViewProps) 
       <FullCalendar
         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
         initialView={initialView}
+  initialDate={defaultDate ? defaultDate : new Date().toISOString().slice(0, 10)}
         headerToolbar={{
           left: 'prev,next today',
           center: 'title',
