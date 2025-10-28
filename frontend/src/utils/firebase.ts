@@ -3,12 +3,12 @@ import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: "orga-vac-dev.firebaseapp.com",
-  projectId: "orga-vac-dev",
-  storageBucket: "orga-vac-dev.appspot.com",
-  messagingSenderId: "187970966374",
-  appId: "1:187970966374:web:383c0926829b2d09a6aea7",
-  measurementId: "G-0F3RZCYDR9"
+  authDomain: "orga-vacances.firebaseapp.com",
+  projectId: "orga-vacances",
+  storageBucket: "orga-vacances.appspot.com", // corrige ici: .app → .appspot.com
+  messagingSenderId: "832598430152",
+  appId: "1:832598430152:web:7b6aaa4882a63c5fabf0fd",
+  measurementId: "G-CTZ5J51226"
 };
 
 const app = initializeApp(firebaseConfig);
