@@ -27,3 +27,17 @@ Redémarre ton serveur Node pour prendre en compte la config.
 Utilise le formulaire "Mot de passe oublié" sur ton frontend, ou envoie une requête POST à /api/users/forgot-password avec un email existant.
 
 Va sur https://ethereal.email/messages pour voir l’email envoyé.
+
+
+A changer dans backend/models/db.js
+
+const { Pool } = require('pg');
+require('dotenv').config();
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  // Enable SSL only in production where the DB expects it. Local Docker Postgres doesn't use SSL.
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+});
+
+module.exports = pool;
