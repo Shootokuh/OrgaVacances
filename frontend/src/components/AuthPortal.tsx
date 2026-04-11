@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import '../styles/AuthPortal.css';
+import planImage from '../assets/PlanMyTrip.png';
 import { GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
 import { apiFetch } from "../utils/api";
 import { auth } from "../utils/firebase";
@@ -100,6 +101,7 @@ const AuthPortal: React.FC<AuthPortalProps> = ({ setToken }) => {
           <div className="left-inner">
             <div className="brand">PlanMyTrip</div>
             <div className="hero">
+              <img src={planImage} alt="Plan your journeys illustration" className="hero-img" />
               <h1 className="hero-title">Plan your journeys. Simply.</h1>
               <p className="hero-sub">Organize your trips, track your budget,
                 <br />and enjoy every moment.</p>
