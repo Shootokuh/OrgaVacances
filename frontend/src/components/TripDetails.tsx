@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import type { Trip } from "../types/trip";
 import type { Activity } from "../types/activity";
 import type { Hotel } from "../types/hotel";
-import HotelList from "./HotelList";
 import ModalAddActivity from "./ModalAddActivity";
 import ModalEditActivity from "./ModalEditActivity";
+import ModalAddTrip from "./ModalAddTrip";
 import ModalHotelForm from "./ModalHotelForm";
-// import CalendarView from "./CalendarView";
+import HotelList from "./HotelList";
 import { apiFetch } from "../utils/api";
 import "../styles/TripDetails.css";
 
@@ -17,31 +17,57 @@ function renderWithLinks(text: string) {
   const urlRegex = /(https?:\/\/[^\s]+)/g;
   const parts = text.split(urlRegex);
   return parts.map((part, i) =>
-    urlRegex.test(part)
+    /^https?:\/\//i.test(part)
       ? <a key={i} href={part} target="_blank" rel="noopener noreferrer" className="trip-link">{part}</a>
       : part
   );
 }
 
+function formatDateLong(value: string) {
+  return new Date(value).toLocaleDateString("fr-FR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
+
+function formatDateMedium(value: string) {
+  return new Date(value).toLocaleDateString("fr-FR", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function formatTimeRange(activity: Activity) {
+  const start = activity.time ? activity.time.slice(0, 5) : "A définir";
+  if (!activity.end_time) return start;
+  return `${start} - ${activity.end_time.slice(0, 5)}`;
+}
+
 
 export default function TripDetails() {
   const { id } = useParams();
+  const location = useLocation();
   const [trip, setTrip] = useState<Trip | null>(null);
   const [activities, setActivities] = useState<Activity[]>([]);
+  const [hotels, setHotels] = useState<Hotel[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
-  const [sideTab, setSideTab] = useState<'planning' | 'hotels'>('planning');
-  const [hotels, setHotels] = useState<Hotel[]>([]);
   const [showHotelModal, setShowHotelModal] = useState(false);
+  const [showTripEditModal, setShowTripEditModal] = useState(false);
   const [editHotel, setEditHotel] = useState<Hotel | null>(null);
+  const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
+  const activeTab = new URLSearchParams(location.search).get("tab") || "planning";
+  const isHotelsView = activeTab === "hotels";
 
   useEffect(() => {
+    if (!id) return;
     apiFetch(`/api/trips`)
       .then((res) => res.json())
       .then((data) => {
         const foundTrip = data.find((t: Trip) => t.id === Number(id));
-        setTrip(foundTrip);
+        setTrip(foundTrip || null);
       });
   }, [id]);
 
@@ -50,6 +76,13 @@ export default function TripDetails() {
     apiFetch(`/api/activities/trip/${id}`)
       .then((res) => res.json())
       .then((data) => setActivities(data));
+  }, [id]);
+
+  useEffect(() => {
+    if (!id) return;
+    apiFetch(`/api/hotels/trip/${id}`)
+      .then((res) => res.json())
+      .then((data) => setHotels(data));
   }, [id]);
 
   const handleActivityAdded = (newActivity: Activity) => {
@@ -68,43 +101,34 @@ export default function TripDetails() {
     }
   };
 
-
-  // CRUD hôtels
-  useEffect(() => {
-    if (!id) return;
-    apiFetch(`/api/hotels/trip/${id}`)
-      .then(res => res.json())
-      .then(data => setHotels(data));
-  }, [id]);
-
   const handleAddHotel = async (hotel: Omit<Hotel, "id">) => {
     const res = await apiFetch(`/api/hotels`, {
       method: "POST",
-      body: JSON.stringify({ ...hotel, trip_id: id })
+      body: JSON.stringify({ ...hotel, trip_id: id }),
     });
     if (res.ok) {
       const newHotel = await res.json();
-      setHotels(prev => [...prev, newHotel]);
+      setHotels((prev) => [...prev, newHotel]);
     }
   };
 
   const handleEditHotel = async (hotel: Hotel) => {
     const res = await apiFetch(`/api/hotels/${hotel.id}`, {
       method: "PUT",
-      body: JSON.stringify(hotel)
+      body: JSON.stringify(hotel),
     });
     if (res.ok) {
       const updated = await res.json();
-      setHotels(prev => prev.map(h => h.id === updated.id ? updated : h));
+      setHotels((prev) => prev.map((h) => (h.id === updated.id ? updated : h)));
     }
   };
 
-  const handleDeleteHotel = async (id: number) => {
-    const res = await apiFetch(`/api/hotels/${id}`, {
-      method: "DELETE"
+  const handleDeleteHotel = async (hotelId: number) => {
+    const res = await apiFetch(`/api/hotels/${hotelId}`, {
+      method: "DELETE",
     });
     if (res.ok) {
-      setHotels(prev => prev.filter(h => h.id !== id));
+      setHotels((prev) => prev.filter((h) => h.id !== hotelId));
     }
   };
 
@@ -129,145 +153,252 @@ export default function TripDetails() {
     (a, b) => new Date(a).getTime() - new Date(b).getTime()
   );
 
+  const totalActivities = trip?.activities_count ?? activities.length;
+
   if (!trip) return <p style={{ padding: "2rem" }}>Chargement...</p>;
 
   return (
     <div className="trip-details-container">
-      <nav className="trip-details-nav">
-        <button
-          className={sideTab === 'planning' ? 'active' : ''}
-          onClick={() => setSideTab('planning')}
-        >Planning</button>
-        <button
-          className={sideTab === 'hotels' ? 'active' : ''}
-          onClick={() => setSideTab('hotels')}
-        >Hôtels</button>
-      </nav>
-      <div className="trip-details-main">
-        {sideTab === 'planning' && (
-          <>
-            <div className="trip-details-header">
-              <h1 className="trip-details-title">{trip.destination}</h1>
-              <div className="trip-details-dates">
-                {new Date(trip.start_date).toLocaleDateString()} – {new Date(trip.end_date).toLocaleDateString()}
-              </div>
-            </div>
-            <div className="trip-details-activities">
+      <section className="trip-hero-card">
+        <div className="trip-hero-cover-wrap">
+          {trip.cover_image_url ? (
+            <img
+              src={trip.cover_image_url}
+              alt={`Couverture du voyage ${trip.title}`}
+              className="trip-hero-cover"
+            />
+          ) : (
+            <div className="trip-hero-cover trip-hero-fallback" aria-hidden="true" />
+          )}
+          <div className="trip-hero-overlay">
+            <h1 className="trip-hero-title">{trip.title}</h1>
+            <p className="trip-hero-subtitle" title={trip.destination}>{trip.destination}</p>
+          </div>
+        </div>
+
+        <div className="trip-meta-bar">
+          <div className="trip-meta-item">
+            <span className="trip-meta-icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="3.25" y="4.25" width="17.5" height="16.5" rx="3.5" stroke="currentColor" strokeWidth="1.5"/>
+                <path d="M8 2.75V6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                <path d="M16 2.75V6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                <path d="M3.25 9.25H20.75" stroke="currentColor" strokeWidth="1.5"/>
+              </svg>
+            </span>
+            <span>{formatDateMedium(trip.start_date)} {"->"} {formatDateMedium(trip.end_date)}</span>
+          </div>
+          <div className="trip-meta-item">
+            <span className="trip-meta-icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M5 7.5H19" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"/>
+                <path d="M5 12H19" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"/>
+                <path d="M5 16.5H19" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"/>
+                <circle cx="3.5" cy="7.5" r="1.1" fill="currentColor"/>
+                <circle cx="3.5" cy="12" r="1.1" fill="currentColor"/>
+                <circle cx="3.5" cy="16.5" r="1.1" fill="currentColor"/>
+              </svg>
+            </span>
+            <span>{totalActivities} activité{totalActivities > 1 ? "s" : ""}</span>
+          </div>
+          <div className="trip-meta-item">
+            <span className="trip-meta-icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="3.5" y="5" width="17" height="14" rx="3" stroke="currentColor" strokeWidth="1.5"/>
+                <path d="M3.5 10H20.5" stroke="currentColor" strokeWidth="1.5"/>
+                <circle cx="8" cy="14.5" r="1" fill="currentColor"/>
+              </svg>
+            </span>
+            <span>{trip.budget.toLocaleString("fr-FR")} €</span>
+          </div>
+        </div>
+      </section>
+
+      {isHotelsView ? (
+        <section className="trip-hotels-section">
+          <h2 className="trip-section-title">Hôtels du voyage</h2>
+          <HotelList
+            hotels={hotels}
+            onAdd={() => {
+              setEditHotel(null);
+              setShowHotelModal(true);
+            }}
+            onEdit={(hotel) => {
+              setEditHotel(hotel);
+              setShowHotelModal(true);
+            }}
+            onDelete={handleDeleteHotel}
+          />
+        </section>
+      ) : (
+        <div className="trip-content-grid">
+          <section className="trip-planning-section">
+            <h2 className="trip-section-title">Planning du voyage</h2>
+            <div className="planning-card">
               {sortedDates.length === 0 && (
                 <div className="trip-details-empty">Aucune activité planifiée pour ce voyage.</div>
               )}
-              {sortedDates.map((date) => (
-                <section className="trip-day-section" key={date}>
-                  <div className="trip-day-header">
-                    <span className="trip-day-date">
-                      {new Date(date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
-                    </span>
-                    <div className="trip-day-divider" />
+              {sortedDates.map((date, dateIndex) => (
+                <div key={date} className="planning-day-block">
+                  <div className="planning-day-header">
+                    <strong>Jour {dateIndex + 1}</strong>
+                    <span>{formatDateLong(date)}</span>
                   </div>
-                  <div className="trip-day-activities">
-                    {groupedActivities[date].map((act) => (
-                      <div className="trip-activity-card" key={act.id}>
-                        <div className="trip-activity-info">
-                          <div className="trip-activity-title">{act.title}</div>
-                          <div className="trip-activity-meta">
-                            {act.location && <span>📍 {act.location} </span>}
-                            {act.time && (
-                              <span>
-                                · 🕒 {act.time.slice(0, 5)}
-                                {act.end_time && ` - ${act.end_time.slice(0, 5)}`}
-                              </span>
-                            )}
-                          </div>
-                          {act.description && (
-                            <div className="trip-activity-desc">
-                              {renderWithLinks(act.description)}
-                            </div>
-                          )}
-                        </div>
-                        <div className="trip-activity-actions">
+
+                  {groupedActivities[date].map((act) => (
+                    <article className="planning-activity-row" key={act.id}>
+                      <div className="planning-activity-time">{formatTimeRange(act)}</div>
+                      <div className="planning-activity-content">
+                        <div className="planning-activity-title">{act.title}</div>
+                        {act.location && <div className="planning-activity-location">{act.location}</div>}
+                        {act.description && (
+                          <div className="planning-activity-description">{renderWithLinks(act.description)}</div>
+                        )}
+
+                        <div className="planning-activity-actions">
                           <button
                             title="Modifier"
-                            className="trip-activity-edit"
+                            className="planning-action-button"
                             onClick={() => {
                               setSelectedActivity(act);
                               setShowEditModal(true);
                             }}
-                          >✏️</button>
+                          >
+                            Modifier
+                          </button>
                           <button
                             title="Supprimer"
-                            className="trip-activity-delete"
+                            className="planning-action-button planning-action-button-danger"
                             onClick={() => handleDeleteActivity(act.id)}
-                          >🗑️</button>
+                          >
+                            Supprimer
+                          </button>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                </section>
+                    </article>
+                  ))}
+                </div>
               ))}
+
+              <div className="planning-card-footer">
+                <button className="trip-add-btn" onClick={() => setShowAddModal(true)}>
+                  + Ajouter une activité
+                </button>
+              </div>
             </div>
-            <div className="trip-add-btn-wrapper">
-              <button className="trip-add-btn" onClick={() => setShowAddModal(true)}>
-                + Ajouter une activité
+          </section>
+
+          <aside className="trip-overview-section">
+            <h2 className="trip-section-title">Aperçu du voyage</h2>
+            <div className="overview-card">
+              <h3>Aperçu du voyage</h3>
+              <ul className="overview-list">
+                <li>
+                  <span className="overview-icon" aria-hidden="true">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M8 6.5H16" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
+                      <path d="M8 11.5H16" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
+                      <path d="M8 16.5H12" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
+                      <rect x="4" y="3.5" width="16" height="17" rx="3" stroke="currentColor" strokeWidth="1.5"/>
+                    </svg>
+                  </span>
+                  <span><strong>Destination :</strong> {trip.title}</span>
+                </li>
+                <li>
+                  <span className="overview-icon" aria-hidden="true">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M12 21C16.5 16.8 18.75 13.55 18.75 10.5C18.75 6.91 15.84 4 12.25 4C8.66 4 5.75 6.91 5.75 10.5C5.75 13.55 8 16.8 12.5 21" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      <circle cx="12.25" cy="10.25" r="2.25" stroke="currentColor" strokeWidth="1.5"/>
+                    </svg>
+                  </span>
+                  <span><strong>Étapes :</strong> {trip.destination}</span>
+                </li>
+                <li>
+                  <span className="overview-icon" aria-hidden="true">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <rect x="3.5" y="4" width="17" height="16" rx="3" stroke="currentColor" strokeWidth="1.5"/>
+                      <path d="M8 2.75V6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                      <path d="M16 2.75V6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                      <path d="M3.5 9H20.5" stroke="currentColor" strokeWidth="1.5"/>
+                    </svg>
+                  </span>
+                  <span><strong>Dates :</strong> {formatDateLong(trip.start_date)} {"->"} {formatDateLong(trip.end_date)}</span>
+                </li>
+                <li>
+                  <span className="overview-icon" aria-hidden="true">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <rect x="3.5" y="5" width="17" height="14" rx="3" stroke="currentColor" strokeWidth="1.5"/>
+                      <path d="M3.5 10H20.5" stroke="currentColor" strokeWidth="1.5"/>
+                      <circle cx="8" cy="14.5" r="1" fill="currentColor"/>
+                    </svg>
+                  </span>
+                  <span><strong>Budget :</strong> {trip.budget.toLocaleString("fr-FR")} €</span>
+                </li>
+              </ul>
+              <button
+                className="trip-edit-btn"
+                onClick={() => setShowTripEditModal(true)}
+              >
+                Modifier le voyage
               </button>
             </div>
-          </>
-        )}
-        {sideTab === 'hotels' && (
-          <>
-            <HotelList
-              hotels={hotels}
-              onAdd={() => {
-                setEditHotel(null);
-                setShowHotelModal(true);
-              }}
-              onEdit={hotel => {
-                setEditHotel(hotel);
-                setShowHotelModal(true);
-              }}
-              onDelete={handleDeleteHotel}
-            />
-            <ModalHotelForm
-              open={showHotelModal}
-              onClose={() => { setShowHotelModal(false); setEditHotel(null); }}
-              onSubmit={async (hotelData) => {
-                if (editHotel) {
-                  await handleEditHotel({ ...editHotel, ...hotelData });
-                } else {
-                  await handleAddHotel(hotelData);
-                }
-                setShowHotelModal(false);
-                setEditHotel(null);
-              }}
-              initial={editHotel || undefined}
-              isEdit={!!editHotel}
-            />
-          </>
-        )}
+          </aside>
+        </div>
+      )}
 
-        {/* Modals */}
-        {showAddModal && trip && (
-          <ModalAddActivity
-            tripId={trip.id}
-            defaultDate={""}
-            onClose={() => setShowAddModal(false)}
-            onActivityAdded={handleActivityAdded}
-          />
-        )}
-        {showEditModal && selectedActivity && (
-          <ModalEditActivity
-            activity={selectedActivity}
-            onClose={() => {
-              setSelectedActivity(null);
-              setShowEditModal(false);
-            }}
-            onActivityUpdated={(updatedActivity) => {
-              setActivities((prev) =>
-                prev.map((a) => (a.id === updatedActivity.id ? updatedActivity : a))
-              );
-            }}
-          />
-        )}
-      </div>
+      {showAddModal && trip && (
+        <ModalAddActivity
+          tripId={trip.id}
+          defaultDate={sortedDates[0] || ""}
+          onClose={() => setShowAddModal(false)}
+          onActivityAdded={handleActivityAdded}
+        />
+      )}
+      {showEditModal && selectedActivity && (
+        <ModalEditActivity
+          activity={selectedActivity}
+          onClose={() => {
+            setSelectedActivity(null);
+            setShowEditModal(false);
+          }}
+          onActivityUpdated={(updatedActivity) => {
+            setActivities((prev) =>
+              prev.map((a) => (a.id === updatedActivity.id ? updatedActivity : a))
+            );
+          }}
+        />
+      )}
+      {showTripEditModal && trip && (
+        <ModalAddTrip
+          initialTrip={trip}
+          onClose={() => setShowTripEditModal(false)}
+          onTripAdded={() => {
+            setShowTripEditModal(false);
+          }}
+          onTripUpdated={(updatedTrip) => {
+            setTrip(updatedTrip);
+            setShowTripEditModal(false);
+          }}
+        />
+      )}
+      <ModalHotelForm
+        open={showHotelModal}
+        onClose={() => {
+          setShowHotelModal(false);
+          setEditHotel(null);
+        }}
+        onSubmit={async (hotelData) => {
+          if (editHotel) {
+            await handleEditHotel({ ...editHotel, ...hotelData });
+          } else {
+            await handleAddHotel(hotelData);
+          }
+          setShowHotelModal(false);
+          setEditHotel(null);
+        }}
+        initial={editHotel || undefined}
+        isEdit={!!editHotel}
+      />
     </div>
   );
 }

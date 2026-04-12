@@ -1,22 +1,36 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { Activity } from "../types/activity";
-import "../styles/ModalAddTrip.css";
+import "../styles/ModalAddActivity.css";
 import { apiFetch } from "../utils/api";
 
 type ModalAddActivityProps = {
   onClose: () => void;
   tripId: number;
   onActivityAdded: (activity: Activity) => void;
-    defaultDate: string;
+  defaultDate: string;
 };
 
 export default function ModalAddActivity({ onClose, tripId, onActivityAdded, defaultDate }: ModalAddActivityProps) {
+  const dateInputRef = useRef<HTMLInputElement | null>(null);
+  const startTimeInputRef = useRef<HTMLInputElement | null>(null);
+  const endTimeInputRef = useRef<HTMLInputElement | null>(null);
   const [title, setTitle] = useState("");
   const [date, setDate] = useState(defaultDate || "");
   const [time, setTime] = useState("");
   const [endTime, setEndTime] = useState("");
   const [location, setLocation] = useState("");
   const [description, setDescription] = useState("");
+
+  const openPicker = (inputRef: React.RefObject<HTMLInputElement | null>) => {
+    const input = inputRef.current;
+    if (!input) return;
+    input.focus();
+    if (typeof input.showPicker === "function") {
+      input.showPicker();
+    } else {
+      input.click();
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,7 +52,7 @@ export default function ModalAddActivity({ onClose, tripId, onActivityAdded, def
     };
 
     try {
-  const res = await apiFetch('/api/activities', {
+      const res = await apiFetch('/api/activities', {
         method: "POST",
         body: JSON.stringify(newActivity),
       });
@@ -52,12 +66,26 @@ export default function ModalAddActivity({ onClose, tripId, onActivityAdded, def
   };
 
   return (
-    <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="modal-content">
-        <h2>Ajouter une activité</h2>
+    <div className="activity-modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="activity-modal-card" role="dialog" aria-modal="true" aria-labelledby="activity-modal-title">
+        <div className="activity-modal-header">
+          <h2 id="activity-modal-title">Ajouter une activité</h2>
+          <button
+            type="button"
+            className="activity-modal-close"
+            onClick={onClose}
+            aria-label="Fermer"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M6 6L18 18" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/>
+              <path d="M18 6L6 18" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/>
+            </svg>
+          </button>
+        </div>
 
         <form onSubmit={handleSubmit}>
-          <div className="form-group">
+          <div className="activity-modal-body">
+            <div className="activity-field-group">
             <label>Nom de l’activité</label>
             <input
               type="text"
@@ -66,36 +94,85 @@ export default function ModalAddActivity({ onClose, tripId, onActivityAdded, def
               onChange={(e) => setTitle(e.target.value)}
               required
             />
-          </div>
+            </div>
 
-          <div className="form-group">
+            <div className="activity-field-group">
             <label>Date</label>
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              required
-            />
-          </div>
+              <div className="activity-input-with-icon">
+                <input
+                  ref={dateInputRef}
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  required
+                  placeholder="jj/mm/aaaa"
+                />
+                <button
+                  type="button"
+                  className="activity-field-icon"
+                  aria-label="Ouvrir le calendrier"
+                  onClick={() => openPicker(dateInputRef)}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <rect x="3.5" y="4" width="17" height="16" rx="3" stroke="currentColor" strokeWidth="1.5"/>
+                    <path d="M8 2.75V6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                    <path d="M16 2.75V6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                    <path d="M3.5 9H20.5" stroke="currentColor" strokeWidth="1.5"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
 
-          <div className="form-group">
-            <label>Heure de début (optionnelle)</label>
-            <input
-              type="time"
-              value={time}
-              onChange={(e) => setTime(e.target.value)}
-            />
-          </div>
-          <div className="form-group">
-            <label>Heure de fin (optionnelle)</label>
-            <input
-              type="time"
-              value={endTime}
-              onChange={(e) => setEndTime(e.target.value)}
-            />
-          </div>
+            <div className="activity-time-row">
+              <div className="activity-field-group">
+                <label>Heure de début (optionnelle)</label>
+                <div className="activity-input-with-icon">
+                  <input
+                    ref={startTimeInputRef}
+                    type="time"
+                    value={time}
+                    onChange={(e) => setTime(e.target.value)}
+                    placeholder="--:--"
+                  />
+                  <button
+                    type="button"
+                    className="activity-field-icon"
+                    aria-label="Ouvrir la sélection d'heure de début"
+                    onClick={() => openPicker(startTimeInputRef)}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                      <circle cx="12" cy="12" r="8" stroke="currentColor" strokeWidth="1.5"/>
+                      <path d="M12 8V12L14.5 13.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div className="activity-field-group">
+                <label>Heure de fin (optionnelle)</label>
+                <div className="activity-input-with-icon">
+                  <input
+                    ref={endTimeInputRef}
+                    type="time"
+                    value={endTime}
+                    onChange={(e) => setEndTime(e.target.value)}
+                    placeholder="--:--"
+                  />
+                  <button
+                    type="button"
+                    className="activity-field-icon"
+                    aria-label="Ouvrir la sélection d'heure de fin"
+                    onClick={() => openPicker(endTimeInputRef)}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                      <circle cx="12" cy="12" r="8" stroke="currentColor" strokeWidth="1.5"/>
+                      <path d="M12 8V12L14.5 13.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
 
-          <div className="form-group">
+            <div className="activity-field-group">
             <label>Lieu (optionnel)</label>
             <input
               type="text"
@@ -103,22 +180,22 @@ export default function ModalAddActivity({ onClose, tripId, onActivityAdded, def
               value={location}
               onChange={(e) => setLocation(e.target.value)}
             />
-          </div>
+            </div>
 
-          <div className="form-group">
+            <div className="activity-field-group">
             <label>Description (optionnelle)</label>
             <textarea
               placeholder="Ex : Réserver à l'avance"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
-              style={{ resize: "vertical" }}
             />
-          </div>
+            </div>
 
-          <div className="form-actions">
-            <button type="submit">Ajouter</button>
-            <button type="button" onClick={onClose}>Annuler</button>
+            <div className="activity-form-actions">
+              <button className="activity-btn activity-btn-secondary" type="button" onClick={onClose}>Annuler</button>
+              <button className="activity-btn activity-btn-primary" type="submit">Ajouter</button>
+            </div>
           </div>
         </form>
       </div>
