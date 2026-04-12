@@ -3,11 +3,14 @@ exports.getMe = async (req, res) => {
   const email = req.user?.email;
   if (!email) return res.status(401).json({ error: 'Utilisateur non authentifié' });
   try {
-    const userResult = await pool.query('SELECT name FROM users WHERE email = $1', [email]);
+    const userResult = await pool.query('SELECT name, avatar_url FROM users WHERE email = $1', [email]);
     if (userResult.rows.length === 0) {
       return res.status(404).json({ error: 'Profil utilisateur non trouvé' });
     }
-    res.json({ name: userResult.rows[0].name });
+    res.json({
+      name: userResult.rows[0].name,
+      avatar_url: userResult.rows[0].avatar_url
+    });
   } catch (err) {
     console.error('Erreur getMe:', err);
     res.status(500).json({ error: 'Erreur serveur' });

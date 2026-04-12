@@ -6,4 +6,6 @@ export type Trip = {
   end_date: string;
   budget: number;
   role: 'owner' | 'viewer';
+  cover_image_url?: string | null;
+  activities_count?: number;
 };

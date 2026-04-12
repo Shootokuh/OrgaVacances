@@ -4,10 +4,14 @@ export const getToken = () => localStorage.getItem('token');
 
 export async function apiFetch(url: string, options: RequestInit = {}) {
   const token = getToken();
-  const headers = {
-    ...(options.headers || {}),
-    'Content-Type': 'application/json',
+  const isFormDataBody = typeof FormData !== 'undefined' && options.body instanceof FormData;
+  const baseHeaders = {
     ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+  };
+  const headers = {
+    ...baseHeaders,
+    ...(!isFormDataBody ? { 'Content-Type': 'application/json' } : {}),
+    ...(options.headers || {})
   };
   const opts = { ...options, headers };
   // Ajoute le préfixe VITE_API_URL si l'URL ne commence pas par http

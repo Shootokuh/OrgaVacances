@@ -5,10 +5,10 @@ FROM node:18
 WORKDIR /app
 
 # Copie des fichiers package.json
-COPY backend/package*.json ./
+COPY package*.json ./
 
 # Copie du code source
-COPY backend/. .
+COPY . .
 
 
 # Installation des dépendances

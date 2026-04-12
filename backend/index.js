@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 require('dotenv').config();
 
 const userRoutes = require('./routes/userRoutes');
@@ -24,6 +25,7 @@ app.use(cors({
 
 
 app.use(express.json());
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Route publique de monitoring
 app.use('/', pingRoutes);

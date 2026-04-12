@@ -17,6 +17,7 @@ CREATE TABLE trips (
   destination TEXT,
   start_date DATE,
   end_date DATE,
+  cover_image_url TEXT,
   budget NUMERIC(10, 2) DEFAULT 0,
   created_at TIMESTAMP DEFAULT NOW()
 );
