@@ -22,9 +22,22 @@ export async function uploadTripCoverImage(file: File): Promise<string> {
     body: formData
   });
 
-  const payload = await response.json();
+  const contentType = response.headers.get('content-type') || '';
+  const isJson = contentType.includes('application/json');
+  const payload = isJson ? await response.json() : await response.text();
+
   if (!response.ok) {
-    throw new Error(payload?.error || "Erreur lors de l'upload de l'image");
+    if (isJson && payload?.error) {
+      throw new Error(payload.error);
+    }
+    if (typeof payload === 'string' && payload.includes('Cannot POST /api/trips/upload-cover')) {
+      throw new Error("Le backend déployé ne supporte pas encore l'upload d'image (route /api/trips/upload-cover absente).");
+    }
+    throw new Error("Erreur lors de l'upload de l'image");
+  }
+
+  if (!isJson || !payload?.cover_image_url) {
+    throw new Error("Réponse serveur invalide pendant l'upload de l'image");
   }
 
   return payload.cover_image_url;
