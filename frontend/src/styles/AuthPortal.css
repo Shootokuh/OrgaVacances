@@ -37,11 +37,11 @@ body{
 .left-panel{flex:52%;background:linear-gradient(135deg,var(--left-grad-start) 0%,var(--left-grad-end) 100%);padding:42px 56px 56px 56px;display:flex}
 .left-inner{display:flex;flex-direction:column;width:100%}
 .brand{font-size:22px;font-weight:700;letter-spacing:-0.03em;color:var(--title)}
-.hero{margin:auto 0 0 0;max-width:430px}
-.hero-title{font-size:56px;line-height:1.06;font-weight:700;letter-spacing:-0.055em;color:var(--title);margin:0}
-.hero-sub{font-size:17px;color:var(--muted);line-height:1.9;max-width:340px;margin-top:28px;margin-bottom:0}
+.hero{margin:44px 0 0 0;max-width:820px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;text-align:left;overflow:visible}
+.hero-title{font-size:56px;line-height:0.98;font-weight:700;letter-spacing:-0.05em;color:var(--title);margin:0;max-width:520px}
+.hero-sub{font-size:18px;color:var(--muted);line-height:2.0;max-width:430px;margin-top:32px;margin-bottom:0;text-align:left}
 
-.hero-img{display:block;width:120%;max-width:120%;height:auto;margin:0 0 24px 0;object-fit:contain}
+.hero-img{display:block;width:100%;max-width:720px;height:auto;margin:0 auto 24px;object-fit:contain}
 
 .right-panel{flex:48%;background:#fbfbfc;display:flex;align-items:center;justify-content:center;padding:0 32px}
 .form-wrapper{width:500px}

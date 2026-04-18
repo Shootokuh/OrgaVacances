@@ -70,6 +70,7 @@ CREATE TABLE hotels (
   address TEXT,
   start_date DATE,
   end_date DATE,
+  price INTEGER,
   reserved BOOLEAN DEFAULT FALSE,
   notes TEXT,
   link TEXT

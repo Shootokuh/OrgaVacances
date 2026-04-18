@@ -45,7 +45,7 @@ exports.getHotel = async (req, res) => {
 
 exports.createHotel = async (req, res) => {
   try {
-    const { trip_id, name, address, start_date, end_date, reserved, notes, link } = req.body;
+    const { trip_id, name, address, start_date, end_date, reserved, notes, link, price } = req.body;
     const email = req.user?.email;
     if (!email) return res.status(401).json({ error: 'Utilisateur non authentifié' });
     const userResult = await db.query('SELECT id FROM users WHERE email = $1', [email]);
@@ -53,10 +53,14 @@ exports.createHotel = async (req, res) => {
     const userId = userResult.rows[0].id;
   const hasAccess = await tripUserModel.userHasAccessToTrip(trip_id, userId);
   if (!hasAccess) return res.status(403).json({ error: 'Accès interdit à ce voyage' });
+    const parsedPrice = price === undefined || price === null || price === "" ? null : Number(price);
+    if (parsedPrice !== null && (!Number.isFinite(parsedPrice) || !Number.isInteger(parsedPrice) || parsedPrice < 0)) {
+      return res.status(400).json({ error: "Le prix doit être un entier positif ou nul" });
+    }
     const { rows } = await db.query(
-      `INSERT INTO hotels (trip_id, name, address, start_date, end_date, reserved, notes, link)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
-      [trip_id, name, address, start_date, end_date, reserved, notes, link]
+      `INSERT INTO hotels (trip_id, name, address, start_date, end_date, reserved, notes, link, price)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+      [trip_id, name, address, start_date, end_date, reserved, notes, link, parsedPrice]
     );
     res.status(201).json(rows[0]);
   } catch (err) {
@@ -68,7 +72,7 @@ exports.createHotel = async (req, res) => {
 exports.updateHotel = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, address, start_date, end_date, reserved, notes, link } = req.body;
+    const { name, address, start_date, end_date, reserved, notes, link, price } = req.body;
     const email = req.user?.email;
     if (!email) return res.status(401).json({ error: 'Utilisateur non authentifié' });
     const userResult = await db.query('SELECT id FROM users WHERE email = $1', [email]);
@@ -80,9 +84,13 @@ exports.updateHotel = async (req, res) => {
   if (!hotel) return res.status(404).json({ error: "Hôtel non trouvé" });
   const hasAccess = await tripUserModel.userHasAccessToTrip(hotel.trip_id, userId);
   if (!hasAccess) return res.status(403).json({ error: 'Accès interdit à ce voyage' });
+    const parsedPrice = price === undefined || price === null || price === "" ? null : Number(price);
+    if (parsedPrice !== null && (!Number.isFinite(parsedPrice) || !Number.isInteger(parsedPrice) || parsedPrice < 0)) {
+      return res.status(400).json({ error: "Le prix doit être un entier positif ou nul" });
+    }
     const { rows } = await db.query(
-      `UPDATE hotels SET name=$1, address=$2, start_date=$3, end_date=$4, reserved=$5, notes=$6, link=$7 WHERE id=$8 RETURNING *`,
-      [name, address, start_date, end_date, reserved, notes, link, id]
+      `UPDATE hotels SET name=$1, address=$2, start_date=$3, end_date=$4, reserved=$5, notes=$6, link=$7, price=$8 WHERE id=$9 RETURNING *`,
+      [name, address, start_date, end_date, reserved, notes, link, parsedPrice, id]
     );
     res.json(rows[0]);
   } catch (err) {

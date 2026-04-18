@@ -4,6 +4,7 @@ export type Hotel = {
   address: string;
   start_date: string;
   end_date: string;
+  price?: number | string | null;
   reserved: boolean;
   notes?: string;
   link?: string;

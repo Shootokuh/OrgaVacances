@@ -216,7 +216,6 @@ export default function TripDetails() {
 
       {isHotelsView ? (
         <section className="trip-hotels-section">
-          <h2 className="trip-section-title">Hôtels du voyage</h2>
           <HotelList
             hotels={hotels}
             onAdd={() => {
