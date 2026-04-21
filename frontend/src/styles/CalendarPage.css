@@ -1,0 +1,51 @@
+.calendar-page-shell {
+  min-height: 100vh;
+  background: #f3f3f5;
+  padding: 1.35rem 1rem 3rem;
+}
+
+.calendar-page-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.85rem;
+}
+
+.calendar-page-section {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.calendar-page-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.calendar-section-title {
+  margin: 0;
+  color: #1f2a44;
+  font-size: clamp(1.4rem, 2vw, 1.6rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.calendar-page-loading-card {
+  padding: 1.5rem 1.6rem;
+  border-radius: 22px;
+  border: 1px solid #e7ebf3;
+  background: #ffffff;
+  color: #667085;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.04);
+}
+
+@media (max-width: 760px) {
+  .calendar-page-shell {
+    padding: 1rem 0.8rem 2rem;
+  }
+
+  .calendar-page-container {
+    gap: 1.3rem;
+  }
+}
