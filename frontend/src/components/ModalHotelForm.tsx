@@ -9,7 +9,6 @@ type Props = {
   initial?: Partial<Hotel>;
   isEdit?: boolean;
   tripStartDate?: string;
-  tripEndDate?: string;
 };
 
 const defaultHotel: Omit<Hotel, "id"> = {
@@ -23,7 +22,7 @@ const defaultHotel: Omit<Hotel, "id"> = {
   link: ""
 };
 
-const ModalHotelForm: React.FC<Props> = ({ open, onClose, onSubmit, initial, isEdit, tripStartDate, tripEndDate }) => {
+const ModalHotelForm: React.FC<Props> = ({ open, onClose, onSubmit, initial, isEdit, tripStartDate }) => {
   const startDateInputRef = useRef<HTMLInputElement | null>(null);
   const endDateInputRef = useRef<HTMLInputElement | null>(null);
   const [hotel, setHotel] = useState<Omit<Hotel, "id">>({ ...defaultHotel, ...initial });

@@ -155,7 +155,7 @@ export default function TripDetails() {
 
   // Fonction pour calculer le numéro du jour en fonction de la date de début du voyage
   const calculateDayNumber = (dateString: string): number => {
-    const startDate = new Date(trip.start_date);
+    const startDate = new Date(trip?.start_date ?? dateString);
     const currentDate = new Date(dateString);
     
     // Réinitialiser les heures pour une comparaison correcte des dates
@@ -252,7 +252,7 @@ export default function TripDetails() {
               {sortedDates.length === 0 && (
                 <div className="trip-details-empty">Aucune activité planifiée pour ce voyage.</div>
               )}
-              {sortedDates.map((date, dateIndex) => (
+              {sortedDates.map((date) => (
                 <div key={date} className="planning-day-block">
                   <div className="planning-day-header">
                     <strong>Jour {calculateDayNumber(date)}</strong>
@@ -410,10 +410,9 @@ export default function TripDetails() {
           setShowHotelModal(false);
           setEditHotel(null);
         }}
-        initial={editHotel}
+        initial={editHotel || undefined}
         isEdit={!!editHotel}
         tripStartDate={trip?.start_date}
-        tripEndDate={trip?.end_date}
       />
     </div>
   );

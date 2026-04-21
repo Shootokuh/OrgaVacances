@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState } from "react";
 import type { Activity } from "../types/activity";
 import "../styles/ModalAddActivity.css";
 import { apiFetch } from "../utils/api";
