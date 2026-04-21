@@ -40,13 +40,19 @@ const ModalHotelForm: React.FC<Props> = ({ open, onClose, onSubmit, initial, isE
     return date.toISOString().slice(0, 10);
   };
 
-  const openDatePicker = (inputRef: React.RefObject<HTMLInputElement | null>, defaultDate?: string) => {
+  const openDatePicker = (inputRef: React.RefObject<HTMLInputElement | null>, defaultDate?: string, dateType?: 'start' | 'end') => {
     const input = inputRef.current;
     if (!input) return;
     
     // Si on a une date par défaut et que le champ est vide, le remplir temporairement pour le picker
     if (defaultDate && !input.value) {
       input.value = defaultDate;
+      // Synchroniser le state React aussi
+      if (dateType === 'start') {
+        setHotel(h => ({ ...h, start_date: defaultDate }));
+      } else if (dateType === 'end') {
+        setHotel(h => ({ ...h, end_date: defaultDate }));
+      }
     }
     
     input.focus();
@@ -121,7 +127,7 @@ const ModalHotelForm: React.FC<Props> = ({ open, onClose, onSubmit, initial, isE
                 <button
                   type="button"
                   className="date-icon"
-                  onClick={() => openDatePicker(startDateInputRef, formatDateForInput(tripStartDate))}
+                  onClick={() => openDatePicker(startDateInputRef, formatDateForInput(tripStartDate), 'start')}
                   aria-label="Ouvrir le calendrier de date d'arrivée"
                 >
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -145,7 +151,7 @@ const ModalHotelForm: React.FC<Props> = ({ open, onClose, onSubmit, initial, isE
                 <button
                   type="button"
                   className="date-icon"
-                  onClick={() => openDatePicker(endDateInputRef, formatDateForInput(tripStartDate))}
+                  onClick={() => openDatePicker(endDateInputRef, formatDateForInput(tripStartDate), 'end')}
                   aria-label="Ouvrir le calendrier de date de départ"
                 >
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

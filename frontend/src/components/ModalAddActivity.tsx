@@ -40,6 +40,9 @@ export default function ModalAddActivity({ onClose, tripId, onActivityAdded, def
     // Si on a une date par défaut et que le champ est vide, le remplir temporairement pour le picker
     if (defaultDateValue && !input.value) {
       input.value = defaultDateValue;
+      if (input === dateInputRef.current) {
+        setDate(defaultDateValue);
+      }
     }
     
     input.focus();
@@ -53,6 +56,12 @@ export default function ModalAddActivity({ onClose, tripId, onActivityAdded, def
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    const resolvedDate = date || dateInputRef.current?.value || "";
+    if (!resolvedDate) {
+      alert("Veuillez choisir une date.");
+      return;
+    }
+
     // Validation heure de fin >= heure de début
     if (time && endTime && endTime < time) {
       alert("L'heure de fin ne peut pas être avant l'heure de début.");
@@ -62,7 +71,7 @@ export default function ModalAddActivity({ onClose, tripId, onActivityAdded, def
     const newActivity = {
       trip_id: tripId,
       title,
-      date,
+      date: resolvedDate,
       time: time || null,
       end_time: endTime || null,
       location: location || null,
