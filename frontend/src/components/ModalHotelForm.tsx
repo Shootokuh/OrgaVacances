@@ -8,6 +8,8 @@ type Props = {
   onSubmit: (hotel: Omit<Hotel, "id">) => void;
   initial?: Partial<Hotel>;
   isEdit?: boolean;
+  tripStartDate?: string;
+  tripEndDate?: string;
 };
 
 const defaultHotel: Omit<Hotel, "id"> = {
@@ -21,14 +23,33 @@ const defaultHotel: Omit<Hotel, "id"> = {
   link: ""
 };
 
-const ModalHotelForm: React.FC<Props> = ({ open, onClose, onSubmit, initial, isEdit }) => {
+const ModalHotelForm: React.FC<Props> = ({ open, onClose, onSubmit, initial, isEdit, tripStartDate, tripEndDate }) => {
   const startDateInputRef = useRef<HTMLInputElement | null>(null);
   const endDateInputRef = useRef<HTMLInputElement | null>(null);
   const [hotel, setHotel] = useState<Omit<Hotel, "id">>({ ...defaultHotel, ...initial });
 
-  const openDatePicker = (inputRef: React.RefObject<HTMLInputElement | null>) => {
+  // Fonction pour formater les dates au format yyyy-MM-dd
+  const formatDateForInput = (d?: string): string => {
+    if (!d) return "";
+    // Si c'est du format ISO (2026-08-29T00:00:00.000Z), extraire juste la date
+    if (d.includes("T")) {
+      return d.substring(0, 10);
+    }
+    // Sinon essayer de parser et formatter
+    const date = new Date(d);
+    if (isNaN(date.getTime())) return "";
+    return date.toISOString().slice(0, 10);
+  };
+
+  const openDatePicker = (inputRef: React.RefObject<HTMLInputElement | null>, defaultDate?: string) => {
     const input = inputRef.current;
     if (!input) return;
+    
+    // Si on a une date par défaut et que le champ est vide, le remplir temporairement pour le picker
+    if (defaultDate && !input.value) {
+      input.value = defaultDate;
+    }
+    
     input.focus();
     if (typeof input.showPicker === "function") {
       input.showPicker();
@@ -38,23 +59,25 @@ const ModalHotelForm: React.FC<Props> = ({ open, onClose, onSubmit, initial, isE
   };
 
   useEffect(() => {
-    // Pour préremplir les dates au format yyyy-mm-dd si initial est fourni
-    const formatDate = (d?: string) => {
-      if (!d) return "";
-      const date = new Date(d);
-      if (isNaN(date.getTime())) return "";
-      return date.toISOString().slice(0, 10);
-    };
-    setHotel(() => ({
-      ...defaultHotel,
-      ...initial,
-      start_date: formatDate(initial?.start_date),
-      end_date: formatDate(initial?.end_date),
-      price: initial?.price === undefined || initial?.price === null || initial?.price === ""
-        ? null
-        : Number(initial?.price)
-    }));
-  }, [initial, open]);
+    if (isEdit && initial) {
+      // Mode édition: pré-remplir avec les données existantes
+      setHotel(() => ({
+        ...defaultHotel,
+        ...initial,
+        start_date: formatDateForInput(initial?.start_date),
+        end_date: formatDateForInput(initial?.end_date),
+        price: initial?.price === undefined || initial?.price === null || initial?.price === ""
+          ? null
+          : Number(initial?.price)
+      }));
+    } else {
+      // Mode création: réinitialiser avec les valeurs par défaut (champs vides)
+      setHotel(() => ({
+        ...defaultHotel,
+        price: null
+      }));
+    }
+  }, [initial, open, isEdit]);
 
   if (!open) return null;
 
@@ -99,7 +122,7 @@ const ModalHotelForm: React.FC<Props> = ({ open, onClose, onSubmit, initial, isE
                 <button
                   type="button"
                   className="date-icon"
-                  onClick={() => openDatePicker(startDateInputRef)}
+                  onClick={() => openDatePicker(startDateInputRef, formatDateForInput(tripStartDate))}
                   aria-label="Ouvrir le calendrier de date d'arrivée"
                 >
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -123,7 +146,7 @@ const ModalHotelForm: React.FC<Props> = ({ open, onClose, onSubmit, initial, isE
                 <button
                   type="button"
                   className="date-icon"
-                  onClick={() => openDatePicker(endDateInputRef)}
+                  onClick={() => openDatePicker(endDateInputRef, formatDateForInput(tripStartDate))}
                   aria-label="Ouvrir le calendrier de date de départ"
                 >
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

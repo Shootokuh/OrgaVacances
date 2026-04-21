@@ -44,23 +44,18 @@ export default function CalendarPage() {
 
   useEffect(() => {
     if (!trip) return;
-    const today = new Date();
     const start = trip.start_date
       ? (trip.start_date.includes("T") || trip.start_date.includes(" ")
         ? new Date(trip.start_date)
         : new Date(`${trip.start_date.slice(0, 10)}T00:00:00`))
       : null;
     if (!start || Number.isNaN(start.getTime())) {
-      setDefaultDate(today.toISOString().slice(0, 10));
+      setDefaultDate(new Date().toISOString().slice(0, 10));
       return;
     }
-    // Si le début du voyage est dans le futur, on affiche cette date
-    if (today < start) {
-      setDefaultDate(trip.start_date.slice(0, 10));
-    } else {
-      // Sinon, on affiche aujourd'hui
-      setDefaultDate(today.toISOString().slice(0, 10));
-    }
+
+    // La vue calendrier doit toujours s'ouvrir sur le début du voyage.
+    setDefaultDate(trip.start_date.slice(0, 10));
   }, [trip]);
 
   if (!trip) {
@@ -140,7 +135,11 @@ export default function CalendarPage() {
             <h2 className="calendar-section-title">Calendrier</h2>
           </div>
 
-          <CalendarView activities={activities} hotels={hotels} defaultDate={defaultDate} />
+          <CalendarView
+            activities={activities}
+            hotels={hotels}
+            defaultDate={defaultDate || (trip.start_date ? trip.start_date.slice(0, 10) : "")}
+          />
         </section>
       </div>
     </div>

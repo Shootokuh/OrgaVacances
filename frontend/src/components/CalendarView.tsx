@@ -7,7 +7,7 @@ import frLocale from '@fullcalendar/core/locales/fr';
 import type { DatesSetArg, EventClickArg, EventContentArg, EventInput } from '@fullcalendar/core';
 import type { Activity } from '../types/activity';
 import type { Hotel } from '../types/hotel';
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 type CalendarViewProps = {
   activities: Activity[];
@@ -374,6 +374,14 @@ export default function CalendarView({ activities, hotels, defaultDate }: Calend
 
     return computeVisibleTimeRange(feedEvents, visibleDateRange.start, visibleDateRange.end);
   }, [currentView, feedEvents, visibleDateRange]);
+
+  useEffect(() => {
+    const nextDate = defaultDate?.slice(0, 10);
+    if (!nextDate) return;
+    const api = calendarRef.current?.getApi();
+    if (!api) return;
+    api.gotoDate(nextDate);
+  }, [defaultDate]);
 
   const renderEventContent = (content: EventContentArg) => {
     const eventType = (content.event.extendedProps.type as CalendarEventType) || 'activity';

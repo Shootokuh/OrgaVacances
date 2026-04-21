@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import type { Activity } from "../types/activity";
 import "../styles/ModalAddActivity.css";
 import { apiFetch } from "../utils/api";
@@ -14,16 +14,34 @@ export default function ModalAddActivity({ onClose, tripId, onActivityAdded, def
   const dateInputRef = useRef<HTMLInputElement | null>(null);
   const startTimeInputRef = useRef<HTMLInputElement | null>(null);
   const endTimeInputRef = useRef<HTMLInputElement | null>(null);
+  
+  // Formater la date au format yyyy-MM-dd si elle vient en ISO format
+  const formatDateForInput = (dateValue: string): string => {
+    if (!dateValue) return "";
+    // Si c'est du format ISO (2026-08-29T00:00:00.000Z), extraire juste la date
+    if (dateValue.includes("T")) {
+      return dateValue.substring(0, 10);
+    }
+    // Sinon c'est déjà au format yyyy-MM-dd
+    return dateValue;
+  };
+  
   const [title, setTitle] = useState("");
-  const [date, setDate] = useState(defaultDate || "");
+  const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [endTime, setEndTime] = useState("");
   const [location, setLocation] = useState("");
   const [description, setDescription] = useState("");
 
-  const openPicker = (inputRef: React.RefObject<HTMLInputElement | null>) => {
+  const openPicker = (inputRef: React.RefObject<HTMLInputElement | null>, defaultDateValue?: string) => {
     const input = inputRef.current;
     if (!input) return;
+    
+    // Si on a une date par défaut et que le champ est vide, le remplir temporairement pour le picker
+    if (defaultDateValue && !input.value) {
+      input.value = defaultDateValue;
+    }
+    
     input.focus();
     if (typeof input.showPicker === "function") {
       input.showPicker();
@@ -111,7 +129,7 @@ export default function ModalAddActivity({ onClose, tripId, onActivityAdded, def
                   type="button"
                   className="activity-field-icon"
                   aria-label="Ouvrir le calendrier"
-                  onClick={() => openPicker(dateInputRef)}
+                  onClick={() => openPicker(dateInputRef, formatDateForInput(defaultDate))}
                 >
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                     <rect x="3.5" y="4" width="17" height="16" rx="3" stroke="currentColor" strokeWidth="1.5"/>

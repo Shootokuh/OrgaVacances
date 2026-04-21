@@ -153,6 +153,21 @@ export default function TripDetails() {
     (a, b) => new Date(a).getTime() - new Date(b).getTime()
   );
 
+  // Fonction pour calculer le numéro du jour en fonction de la date de début du voyage
+  const calculateDayNumber = (dateString: string): number => {
+    const startDate = new Date(trip.start_date);
+    const currentDate = new Date(dateString);
+    
+    // Réinitialiser les heures pour une comparaison correcte des dates
+    startDate.setHours(0, 0, 0, 0);
+    currentDate.setHours(0, 0, 0, 0);
+    
+    const timeDiff = currentDate.getTime() - startDate.getTime();
+    const dayDiff = Math.floor(timeDiff / (24 * 60 * 60 * 1000));
+    
+    return dayDiff + 1; // +1 parce que le jour 1 commence à la date de départ
+  };
+
   const totalActivities = trip?.activities_count ?? activities.length;
 
   if (!trip) return <p style={{ padding: "2rem" }}>Chargement...</p>;
@@ -240,7 +255,7 @@ export default function TripDetails() {
               {sortedDates.map((date, dateIndex) => (
                 <div key={date} className="planning-day-block">
                   <div className="planning-day-header">
-                    <strong>Jour {dateIndex + 1}</strong>
+                    <strong>Jour {calculateDayNumber(date)}</strong>
                     <span>{formatDateLong(date)}</span>
                   </div>
 
@@ -348,7 +363,7 @@ export default function TripDetails() {
       {showAddModal && trip && (
         <ModalAddActivity
           tripId={trip.id}
-          defaultDate={sortedDates[0] || ""}
+          defaultDate={trip.start_date && typeof trip.start_date === "string" ? trip.start_date.substring(0, 10) : ""}
           onClose={() => setShowAddModal(false)}
           onActivityAdded={handleActivityAdded}
         />
@@ -395,8 +410,10 @@ export default function TripDetails() {
           setShowHotelModal(false);
           setEditHotel(null);
         }}
-        initial={editHotel || undefined}
+        initial={editHotel}
         isEdit={!!editHotel}
+        tripStartDate={trip?.start_date}
+        tripEndDate={trip?.end_date}
       />
     </div>
   );
